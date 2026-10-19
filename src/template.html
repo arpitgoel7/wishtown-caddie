@@ -22,6 +22,7 @@
   --accent: #4FC3A1; --accent-ink: #08130F; --plan: #F2C230;
   --good: #4CC27F; --sand: #D9B26A; --water: #5AA6F0; --warn: #F0954F; --bad: #EF6A5E; color-scheme: dark; }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5; }
 .wrap { max-width: 1180px; margin: 0 auto; padding-block: 20px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 20px; }
 header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
@@ -45,6 +46,13 @@ h1 .hn { color: var(--accent); }
 @media (max-width: 820px) { .mapcard { position: static; } }
 .mapbox { display: flex; justify-content: center; }
 #map { width: 100%; height: auto; max-height: 78vh; aspect-ratio: 1 / 2; border-radius: 6px; background: #22301f; display: block; }
+.soon { display: grid; place-items: center; text-align: center; gap: 6px; min-height: 320px; border-radius: 6px; background: var(--soft); color: var(--muted); padding: 24px; }
+.soon b { font-family: var(--display); font-size: 28px; color: var(--ink); }
+.holepick { display: inline-flex; align-items: center; gap: 4px; }
+.holepick button { font: inherit; font-size: 15px; width: 32px; height: 32px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.holepick select { font-weight: 600; }
+td.soonc { color: var(--muted); text-align: left; }
+.prog { font-size: 13px; color: var(--muted); }
 @media (max-width: 820px) { #map { max-height: 70vh; width: auto; max-width: 100%; } }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; color: var(--muted); }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
@@ -97,7 +105,7 @@ input[type="number"] { font-variant-numeric: tabular-nums; }
 .btn.small { padding: 5px 10px; font-size: 13px; }
 .btn.danger { border-color: var(--bad); color: var(--bad); background: transparent; }
 .bag { display: grid; gap: 4px; }
-.bagrow { display: grid; grid-template-columns: minmax(70px, 1.4fr) repeat(3, minmax(44px, .8fr)) minmax(46px, .7fr) 28px; gap: 6px; align-items: center; }
+.bagrow { display: grid; grid-template-columns: minmax(62px, 1.4fr) repeat(3, minmax(40px, .8fr)) minmax(42px, .6fr) minmax(58px, 1fr) 24px; gap: 5px; align-items: center; }
 .bagrow.head { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
 .bagrow input, .bagrow select { width: 100%; padding: 5px 6px; }
 .bagrow.off input:not([type="checkbox"]), .bagrow.off select { opacity: .45; }
@@ -119,12 +127,13 @@ input[type="number"] { font-variant-numeric: tabular-nums; }
   <header class="top">
     <div>
       <div class="eyebrow">Jaypee Greens Wish Town · Noida · Par 71</div>
-      <h1>Hole <span class="hn">4</span> game plan</h1>
+      <h1>Hole <span class="hn" id="hn">4</span> game plan</h1>
     </div>
     <div class="holefacts" id="facts"></div>
   </header>
 
   <div class="controls">
+    <div><span class="ctl-label">Hole</span><span class="holepick"><button id="holePrev" aria-label="Previous hole">‹</button><select id="holeSel" aria-label="Hole"></select><button id="holeNext" aria-label="Next hole">›</button></span></div>
     <div><span class="ctl-label">Player</span><select id="playerSel" aria-label="Player"></select></div>
     <div><span class="ctl-label">Tee</span><span class="seg" id="teeSeg" role="group" aria-label="Tee"></span></div>
     <div><span class="ctl-label">Pin</span><span class="seg" id="pinSeg" role="group" aria-label="Pin position"></span></div>
@@ -133,7 +142,7 @@ input[type="number"] { font-variant-numeric: tabular-nums; }
 
   <div class="main">
     <section class="mapcard" aria-label="Hole map">
-      <div class="mapbox"><svg id="map" viewBox="-95 -360 190 380" role="img" aria-label="Satellite map of hole 4 with hazards and the recommended route"></svg></div>
+      <div class="mapbox"><svg id="map" viewBox="-95 -360 190 380" role="img" aria-label="Satellite map of the hole with hazards and the recommended route"></svg><div class="soon" id="mapSoon" hidden></div></div>
       <div class="legend">
         <span><i style="background:var(--plan)"></i>Your route</span>
         <span><i style="background:#fff"></i>Shot pattern</span>
@@ -147,11 +156,13 @@ input[type="number"] { font-variant-numeric: tabular-nums; }
     <section style="min-width:0">
       <div class="tabs" role="tablist">
         <button role="tab" id="tab-plan" aria-selected="true" data-tab="plan">Game plan</button>
+        <button role="tab" id="tab-round" aria-selected="false" data-tab="round">Round plan</button>
         <button role="tab" id="tab-bag" aria-selected="false" data-tab="bag">My bag</button>
         <button role="tab" id="tab-hz" aria-selected="false" data-tab="hz">Hazards</button>
         <button role="tab" id="tab-card" aria-selected="false" data-tab="card">Scorecard</button>
       </div>
       <div class="panel" id="panel-plan"></div>
+      <div class="panel" id="panel-round" hidden></div>
       <div class="panel" id="panel-bag" hidden></div>
       <div class="panel" id="panel-hz" hidden></div>
       <div class="panel" id="panel-card" hidden></div>
@@ -159,8 +170,8 @@ input[type="number"] { font-variant-numeric: tabular-nums; }
   </div>
 </div>
 
-<script id="geom-src">{{GEOM}}</script>
-<script id="hole-src">{{HOLE}}</script>
+<script id="holes-src">const HOLES = {}, OSM = {};
+{{HOLES}}</script>
 <script id="engine-src">{{ENGINE}}</script>
 <script id="worker-src" type="text/plain">
 function rngNormals(seed) {
@@ -169,7 +180,7 @@ function rngNormals(seed) {
 }
 function compute(req) {
   const { profile, teeKey, pinKey, objective } = req;
-  const H = HOLE4; if (!H.raster) H.raster = buildRaster(H);
+  const H = prepareHole(HOLES[req.hole]);
   const P = makePlayer(profile);
   if (!P.shots.some((s) => s.type === 'full')) return { error: 'Add at least one club with a carry distance in My bag.' };
   const pin = H.pins[pinKey], tee = H.tees[teeKey];
@@ -189,12 +200,18 @@ function compute(req) {
       hist[d <= -2 ? 0 : d === -1 ? 1 : d === 0 ? 2 : d === 1 ? 3 : d === 2 ? 4 : 5]++;
       if (s >= netPar + 2) blow++; if (s <= netPar) npb++; stab += Math.max(0, 2 + netPar - s);
     }
-    return { name: o.shot.name, kind: o.shot.kind, aimDeg: o.aimDeg, ang: o.ang, carry: o.shot.carry, total: o.shot.carry + o.shot.roll, mean: mean / n, hist: hist.map((h) => h / n), blow: blow / n, stab: stab / n, npb: npb / n, water: r.water, first: r.firstLand };
+    return { name: o.shot.name, kind: o.shot.kind, aimDeg: o.aimDeg, ang: o.ang, carry: o.shot.carry, total: o.shot.carry + o.shot.roll, curve: o.shot.curve || 0, mean: mean / n, hist: hist.map((h) => h / n), blow: blow / n, stab: stab / n, npb: npb / n, water: r.water, first: r.firstLand };
   });
   const key = (r) => objective === 'safe' ? r.mean + 1.0 * r.blow : r.mean;
   rows.sort((a, b) => key(a) - key(b));
-  rows.forEach((r, i) => { r.second = i < 4 ? secondShot(sol, H, r) : null; });
-  return { rows, strokes, netPar, hcp: ph };
+  rows.forEach((r) => { r.second = nextShot(sol, H, r.first, 2); });
+  return { hole: H.number, rows, strokes, netPar, hcp: ph };
+}
+// typical next shot from the average finish of `pts`; follows on once more (shot 3 on long holes)
+function nextShot(sol, H, pts, depth) {
+  const out = secondShot(sol, H, { first: pts });
+  if (out && !out.short && out.dots && depth > 1) out.next = nextShot(sol, H, out.dots, depth - 1);
+  return out;
 }
 function secondShot(sol, H, r) {
   const dry = r.first.filter((p) => p.lie !== LIE.W);
@@ -216,7 +233,7 @@ function secondShot(sol, H, r) {
     if (p.lie === LIE.G) g++; if (p.lie === LIE.S) sand++; if (p.lie === LIE.W) wet++;
     dots.push(p);
   }
-  Object.assign(out, { name: s.name, kind: s.kind, carry: s.carry, aimDeg: pa.a, ang, dots, green: g / dots.length, sand: sand / dots.length, water: wet / dots.length });
+  Object.assign(out, { name: s.name, kind: s.kind, carry: s.carry, curve: s.curve || 0, aimDeg: pa.a, ang, dots, green: g / dots.length, sand: sand / dots.length, water: wet / dots.length });
   return out;
 }
 self.onmessage = (e) => { try { self.postMessage({ id: e.data.id, res: compute(e.data) }); } catch (err) { self.postMessage({ id: e.data.id, res: { error: String(err && err.message || err) } }); } };
@@ -224,45 +241,95 @@ self.onmessage = (e) => { try { self.postMessage({ id: e.data.id, res: compute(e
 <script>
 (function () {
 'use strict';
-const H = HOLE4; H.raster = buildRaster(H);
-const IMG = 'data:image/jpeg;base64,{{IMG}}';
+const IMGS = {{IMGS}};
 const SCORECARD = {{SCORECARD}};
+const ROSTER = {{ROSTER}};
+const MAPPED = Object.keys(HOLES).map(Number).filter((n) => HOLES[n].mapped).sort((a, b) => a - b);
+const TEE_KEYS = ['Black', 'Blue', 'White', 'Red'];
+const PIN_KEYS = ['Front', 'Middle', 'Back'];
 const BAGS = {
   M: [['Driver', 215, 235], ['3 Wood', 195, 210], ['5 Wood', 180, 192], ['4 Hybrid', 172, 180], ['5 Iron', 160, 167], ['6 Iron', 150, 156], ['7 Iron', 140, 145], ['8 Iron', 130, 134], ['9 Iron', 120, 123], ['PW', 108, 110], ['GW', 96, 97], ['SW', 82, 83], ['LW', 65, 65]],
   F: [['Driver', 165, 180], ['3 Wood', 145, 155], ['5 Wood', 135, 143], ['4 Hybrid', 128, 134], ['5 Hybrid', 120, 126], ['6 Iron', 112, 117], ['7 Iron', 105, 109], ['8 Iron', 97, 100], ['9 Iron', 88, 91], ['PW', 78, 80], ['SW', 60, 61]],
 };
-function sampleBag(h, g) { const f = 1 + (18 - h) * 0.008; return BAGS[g].map(([n, c, t]) => ({ name: n, carry: Math.round(c * f), total: Math.round(t * f), acc: '', conf: 3, on: true })); }
-function newPlayer(name, g, h, sample) { return { id: 'p' + Math.random().toString(36).slice(2, 8), name, gender: g, hcp: h, tee: g === 'F' ? 'Red' : 'Blue', bias: 'S', accMode: 'yds', clubs: sampleBag(h, g), sample: !!sample }; }
+function sampleBag(h, g) { const f = 1 + (18 - h) * 0.008; return BAGS[g].map(([n, c, t]) => ({ name: n, carry: Math.round(c * f), total: Math.round(t * f), acc: '', conf: 3, shape: '', on: true })); }
+function newPlayer(name, g, h, sample) { return { id: 'p' + Math.random().toString(36).slice(2, 8), name, gender: g, hcp: h, tee: g === 'F' ? 'Red' : 'Blue', shape: 'S', curve: 2, accMode: 'yds', clubs: sampleBag(h, g), sample: !!sample }; }
+function rosterPlayers() {
+  return ROSTER.players.map((r) => Object.assign(newPlayer(r.name, r.tee === 'Red' ? 'F' : 'M', r.playingHandicap, true), { tee: r.tee, reserve: !!r.reserve }));
+}
 
-const STORE = 'wishtown-caddie-v1';
-let S;
-try { S = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch (e) { S = null; }
-if (!S || !Array.isArray(S.players) || !S.players.length) S = { players: [newPlayer('Arpit', 'M', 18, true), newPlayer('Sample lady golfer', 'F', 24, true)], cur: 0, pin: 'Middle', objective: 'safe', tab: 'plan' };
+const STORE = 'wishtown-caddie-v2', STORE_V1 = 'wishtown-caddie-v1';
+function load() {
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch (e) { s = null; }
+  if (s && Array.isArray(s.players) && s.players.length) return s;
+  const players = rosterPlayers();
+  s = { players, cur: Math.max(0, players.findIndex((p) => p.name === 'Arpit Goel')), pin: 'Middle', objective: 'safe', tab: 'plan', hole: MAPPED[0] || 1 };
+  // carry over bags typed into the Hole 4 page (v1): match on full or first name, otherwise add the player
+  let old = null;
+  try { old = JSON.parse(localStorage.getItem(STORE_V1) || 'null'); } catch (e) { old = null; }
+  if (old && Array.isArray(old.players)) for (const o of old.players) {
+    if (o.sample || !o.name) continue;
+    const nm = o.name.trim().toLowerCase(), first = nm.split(/\s+/)[0];
+    const m = s.players.find((p) => p.name.toLowerCase() === nm) || s.players.find((p) => p.name.toLowerCase().split(' ')[0] === first);
+    const bag = { clubs: (o.clubs || []).map((c) => Object.assign({ shape: '' }, c)), accMode: o.accMode || 'yds', shape: o.bias === 'L' ? 'D' : o.bias === 'R' ? 'F' : 'S', curve: 2, sample: false };
+    if (m) Object.assign(m, bag); else s.players.push(Object.assign(newPlayer(o.name, o.gender || 'M', +o.hcp || 18, false), bag, { tee: o.tee || 'Blue' }));
+  }
+  return s;
+}
+let S = load();
+if (!HOLES[S.hole] && !SCORECARD.holes[S.hole - 1]) S.hole = MAPPED[0] || 1;
 function save() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) { } }
 const cur = () => S.players[Math.min(S.cur, S.players.length - 1)];
+const profileOf = (p) => ({ hcp: p.hcp, clubs: p.clubs, shape: p.shape === 'S' ? 'S' : p.shape + p.curve, accMode: p.accMode });
 
-// ---------- worker ----------
-let worker = null, reqId = 0, pending = null;
-try {
-  const src = ['geom-src', 'hole-src', 'engine-src', 'worker-src'].map((id) => document.getElementById(id).textContent).join('\n;\n');
-  worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
-  worker.onmessage = (e) => { if (e.data.id === reqId) onResult(e.data.res); };
-  worker.onerror = () => { worker = null; };
-} catch (e) { worker = null; }
+// ---------- worker & plan cache ----------
+let worker = null, reqId = 0;
+const waits = {};
 const fallback = new Function(document.getElementById('worker-src').textContent + '; return compute;')();
-
-let R = null, pick = 0, dirty = true;
-function run() {
-  const p = cur();
-  const req = { id: ++reqId, profile: { hcp: p.hcp, clubs: p.clubs, bias: p.bias, accMode: p.accMode }, teeKey: p.tee, pinKey: S.pin, objective: S.objective };
-  document.getElementById('panel-plan').classList.add('busy');
-  if (worker) worker.postMessage(req);
-  else setTimeout(() => { if (req.id === reqId) onResult(fallback(req)); }, 30);
+function runLocal(req) { try { return fallback(req); } catch (err) { return { error: String(err && err.message || err) }; } }
+try {
+  const src = ['holes-src', 'engine-src', 'worker-src'].map((id) => document.getElementById(id).textContent).join('\n;\n');
+  worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+  worker.onmessage = (e) => { const w = waits[e.data.id]; if (w) { delete waits[e.data.id]; w.resolve(e.data.res); } };
+  worker.onerror = () => { worker = null; for (const id in waits) { const w = waits[id]; delete waits[id]; w.resolve(runLocal(w.req)); } };
+} catch (e) { worker = null; }
+function ask(req) {
+  req.id = ++reqId;
+  return new Promise((resolve) => {
+    if (worker) { waits[req.id] = { resolve, req }; worker.postMessage(req); }
+    else setTimeout(() => resolve(runLocal(req)), 30);
+  });
 }
-function onResult(res) {
-  document.getElementById('panel-plan').classList.remove('busy');
-  R = res; pick = 0; dirty = false;
-  renderPlan(); drawMap();
+const cache = new Map(); // key -> { p: Promise, res }
+function reqFor(n) { const p = cur(); return { hole: n, profile: profileOf(p), teeKey: p.tee, pinKey: S.pin, objective: S.objective }; }
+const keyOf = (r) => JSON.stringify([r.hole, r.profile, r.teeKey, r.pinKey, r.objective]);
+function plan(n) {
+  const r = reqFor(n), k = keyOf(r);
+  let c = cache.get(k);
+  if (!c) {
+    c = { res: null }; c.p = ask(r).then((res) => (c.res = res));
+    cache.set(k, c);
+    if (cache.size > 80) cache.delete(cache.keys().next().value);
+  }
+  return c;
+}
+
+let H = null, R = null, pick = 0;
+function setHole(n) {
+  S.hole = Math.max(1, Math.min(18, n));
+  H = HOLES[S.hole] && HOLES[S.hole].mapped ? prepareHole(HOLES[S.hole]) : null;
+  R = null; pick = 0;
+}
+function run() {
+  if (!H) { R = null; renderPlan(); drawMap(); return; }
+  const n = S.hole, c = plan(n);
+  if (c.res) { R = c.res; pick = 0; $('#panel-plan').classList.remove('busy'); renderPlan(); drawMap(); return; }
+  $('#panel-plan').classList.add('busy');
+  c.p.then(() => {
+    if (S.hole !== n || plan(n) !== c) return;
+    $('#panel-plan').classList.remove('busy');
+    R = c.res; pick = 0; renderPlan(); drawMap();
+  });
 }
 
 // ---------- helpers ----------
@@ -270,25 +337,44 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const pct = (v) => (v < 0.005 && v > 0 ? '<1' : Math.round(v * 100)) + '%';
 const yd = (v) => Math.round(v);
+const card = (n) => SCORECARD.holes[n - 1];
+const cardYds = (n, teeKey) => card(n).y[TEE_KEYS.indexOf(teeKey)];
 const tee = () => H.tees[cur().tee];
 const pin = () => H.pins[S.pin];
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const LIECOL = { 0: '#E9F5C9', 1: '#FFFFFF', 2: '#7CFC9A', 3: '#E8C77A', 4: '#FF5A4E', 5: '#FF9F43', 6: '#FF5A4E' };
-const strokesFor = (h) => { h = Math.max(0, Math.round(+h || 0)); return Math.floor(h / 18) + ((h % 18) >= H.si ? 1 : 0); };
+const strokesFor = (h, si) => { h = Math.max(0, Math.round(+h || 0)); return Math.floor(h / 18) + ((h % 18) >= si ? 1 : 0); };
+const KIND_COL = { water: '#5AA6F0', sand: '#E8C77A', trees: '#2F5A33', ob: '#FF5A4E' };
+const SHAPES = [['', 'Stock'], ['S', 'Straight'], ['D1', 'Small draw'], ['D2', 'Draw'], ['D3', 'Big draw'], ['F1', 'Small fade'], ['F2', 'Fade'], ['F3', 'Big fade']];
 
-function fairwayEdges(y) {
+function fairwayEdges(Hh, y) {
   let l = null, r = null;
-  for (let x = -80; x <= 80; x++) if (lieAt(H, x, y) === LIE.F) { if (l === null) l = x; r = x; }
+  for (let x = Hh.view.x0; x <= Hh.view.x1; x++) if (lieAt(Hh, x, y) === LIE.F) { if (l === null) l = x; r = x; }
   return l === null ? null : [l, r];
 }
-function describeAim(p) {
-  const e = fairwayEdges(p.y);
-  if (!e) return p.x < -30 ? 'well left of the fairway' : 'the short grass in front of the green';
+function describeAim(Hh, p) {
+  if (lieAt(Hh, p.x, p.y) === LIE.G) return 'the green';
+  const e = fairwayEdges(Hh, p.y);
+  if (!e) return p.x < -30 ? 'well left of the fairway' : p.x > 30 ? 'well right of the fairway' : 'the short grass in front of the green';
   const [l, r] = e, w = r - l;
   if (p.x < l - 2) return `${yd(l - p.x)} yds left of the fairway`;
   if (p.x > r + 2) return `${yd(p.x - r)} yds right of the fairway`;
   const f = (p.x - l) / w;
   return f < 0.2 ? 'the left edge of the fairway' : f < 0.42 ? 'left-centre of the fairway' : f < 0.58 ? 'the centre of the fairway' : f < 0.8 ? 'right-centre of the fairway' : 'the right edge of the fairway';
+}
+// where to aim the tee shot: relative to the flag when the club reaches the green, else a spot on the fairway
+function aimText(Hh, t, pn, row) {
+  const d = dist(t, pn);
+  if (row.total >= d - 15) {
+    const off = Math.tan((row.aimDeg * Math.PI) / 180) * d;
+    return Math.abs(off) < 3 ? 'straight at the flag' : `${yd(Math.abs(off))} yds ${off > 0 ? 'right' : 'left'} of the flag`;
+  }
+  return `${describeAim(Hh, { x: t.x + Math.sin(row.ang) * row.total, y: t.y + Math.cos(row.ang) * row.total })}, about ${yd(row.total)} yds out`;
+}
+// start line for a shaped shot (curve < 0 = draw for a right-hander)
+function startText(curve) {
+  if (Math.abs(curve) < 2) return '';
+  return ` Start it about ${yd(Math.abs(curve))} yds ${curve < 0 ? 'right' : 'left'} of that and let it ${curve < 0 ? 'draw' : 'fade'} back.`;
 }
 function lineCarry(from, ang, lieCode, maxD) {
   // distance along the line to the far edge of the last stretch of `lieCode`
@@ -299,42 +385,65 @@ function lineCarry(from, ang, lieCode, maxD) {
 
 // ---------- header & controls ----------
 function renderHeader() {
-  const t = tee(), d = yd(dist(t, pin()));
-  const st = strokesFor(cur().hcp);
-  $('#facts').innerHTML = [
-    ['4', 'Par'], ['15', 'Stroke index'], [t.card, `${cur().tee} tee yds`], [d, 'To this pin'], [H.par + st, 'Your net par'],
-  ].map(([b, s]) => `<div class="fact"><b>${b}</b><span>${s}</span></div>`).join('');
-  $('#playerSel').innerHTML = S.players.map((p, i) => `<option value="${i}" ${i === S.cur ? 'selected' : ''}>${esc(p.name)} · ${p.hcp} hcp</option>`).join('');
-  $('#teeSeg').innerHTML = Object.entries(H.tees).map(([k, v]) => `<button aria-pressed="${k === cur().tee}" data-tee="${k}">${k} ${v.card}</button>`).join('');
-  $('#pinSeg').innerHTML = Object.keys(H.pins).map((k) => `<button aria-pressed="${k === S.pin}" data-pin="${k}">${k}</button>`).join('');
+  const n = S.hole, c = card(n), p = cur(), st = strokesFor(p.hcp, c.si);
+  $('#hn').textContent = n;
+  const facts = [[c.par, 'Par'], [c.si, 'Stroke index'], [cardYds(n, p.tee), `${p.tee} tee yds`]];
+  if (H) facts.push([yd(dist(tee(), pin())), 'To this pin']);
+  facts.push([c.par + st, 'Your net par']);
+  $('#facts').innerHTML = facts.map(([b, s]) => `<div class="fact"><b>${b}</b><span>${s}</span></div>`).join('');
+  $('#holeSel').innerHTML = SCORECARD.holes.map((h, i) => `<option value="${i + 1}" ${i + 1 === n ? 'selected' : ''}>${i + 1} · par ${h.par}${HOLES[i + 1] && HOLES[i + 1].mapped ? '' : ' (soon)'}</option>`).join('');
+  $('#playerSel').innerHTML = S.players.map((q, i) => `<option value="${i}" ${i === S.cur ? 'selected' : ''}>${esc(q.name)} · ${q.hcp} hcp${q.reserve ? ' (reserve)' : ''}</option>`).join('');
+  $('#teeSeg').innerHTML = TEE_KEYS.map((k) => `<button aria-pressed="${k === p.tee}" data-tee="${k}">${k} ${cardYds(n, k)}</button>`).join('');
+  $('#pinSeg').innerHTML = PIN_KEYS.map((k) => `<button aria-pressed="${k === S.pin}" data-pin="${k}">${k}</button>`).join('');
   $('#objSeg').innerHTML = [['safe', 'Play to handicap safely'], ['score', 'Lowest average']].map(([k, v]) => `<button aria-pressed="${k === S.objective}" data-obj="${k}">${v}</button>`).join('');
 }
-$('#playerSel').addEventListener('change', (e) => { S.cur = +e.target.value; save(); refreshAll(); });
+function goHole(n, toPlan) { setHole(n); if (toPlan || S.tab === 'round') { S.tab = 'plan'; showTab(); } save(); refreshAll(); }
+$('#holeSel').addEventListener('change', (e) => goHole(+e.target.value));
+$('#holePrev').addEventListener('click', () => goHole(S.hole === 1 ? 18 : S.hole - 1));
+$('#holeNext').addEventListener('click', () => goHole(S.hole === 18 ? 1 : S.hole + 1));
+$('#playerSel').addEventListener('change', (e) => { S.cur = +e.target.value; confirmDel = false; save(); refreshAll(); });
 $('#teeSeg').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; cur().tee = b.dataset.tee; save(); refreshAll(); });
 $('#pinSeg').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; S.pin = b.dataset.pin; save(); refreshAll(); });
 $('#objSeg').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; S.objective = b.dataset.obj; save(); refreshAll(); });
 document.querySelector('.tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; S.tab = b.dataset.tab; save(); showTab(); });
 function showTab() {
-  for (const t of ['plan', 'bag', 'hz', 'card']) { $('#panel-' + t).hidden = t !== S.tab; $('#tab-' + t).setAttribute('aria-selected', t === S.tab); }
+  for (const t of ['plan', 'round', 'bag', 'hz', 'card']) { $('#panel-' + t).hidden = t !== S.tab; $('#tab-' + t).setAttribute('aria-selected', t === S.tab); }
   if (S.tab === 'bag') renderBag();
+  if (S.tab === 'round') fillRound();
 }
-function refreshAll() { renderHeader(); renderHazards(); renderBag(); run(); drawMap(); }
+function refreshAll() { renderHeader(); renderHazards(); renderCard(); renderBag(); run(); drawMap(); if (S.tab === 'round') fillRound(); }
 
 // ---------- plan panel ----------
 const HCOL = ['#1E7F8C', '#2E8B57', 'var(--accent)', '#C99A3E', '#E07B39', '#C8372D'];
 const HLAB = ['Eagle', 'Birdie', 'Par', 'Bogey', 'Double', 'Triple+'];
+function nextShotHtml(sec, label) {
+  if (sec.short) return `<div class="shot"><div class="shotno">Next</div><div><h3>${sec.lie === LIE.G ? 'Putt' : 'Chip or pitch'}</h3><p>A typical shot finishes about ${yd(sec.d)} yds from the pin. ${sec.lie === LIE.G ? 'Two putts and you are done.' : 'Get it on the green and two-putt.'}</p></div></div>`;
+  if (!sec.name) return '';
+  const toGreen = sec.carry >= sec.d - 25;
+  const off = Math.tan((sec.aimDeg * Math.PI) / 180) * sec.d;
+  const aimTxt = !toGreen ? `${off < -3 ? 'left of' : off > 3 ? 'right of' : 'straight down'} the line to the flag, leaving a shorter shot in` : Math.abs(off) < 3 ? 'straight at the flag' : `${yd(Math.abs(off))} yds ${off > 0 ? 'right' : 'left'} of the flag`;
+  const bunkerCarry = toGreen ? lineCarry(sec, sec.ang, LIE.S, sec.d + 5) : 0;
+  return `<div class="shot"><div class="shotno">${label}</div><div><h3>${esc(sec.name)}</h3>
+    <p>From a typical finish about <b>${yd(sec.d)} yds</b> from the pin (${LIE_NAME[sec.lie]}). Aim ${aimTxt}.${startText(sec.curve)}${bunkerCarry ? ` A bunker on this line needs ${bunkerCarry} yds of carry.` : ''}</p>
+    <div class="chips">${toGreen ? `<span class="chip"><i style="background:#7CFC9A"></i>Green ${pct(sec.green)}</span>` : ''}<span class="chip"><i style="background:#E8C77A"></i>Bunker ${pct(sec.sand)}</span>${sec.water > 0.004 ? `<span class="chip"><i style="background:#FF5A4E"></i>Water ${pct(sec.water)}</span>` : ''}</div></div></div>`;
+}
 function renderPlan() {
   const el = $('#panel-plan'); const p = cur();
+  if (!H) {
+    const c = card(S.hole), st = strokesFor(p.hcp, c.si);
+    el.innerHTML = `<div class="banner"><span><b>Hole ${S.hole} is coming soon.</b> It is par ${c.par}, stroke index ${c.si}, ${cardYds(S.hole, p.tee)} yds from the ${p.tee} tee. ${st ? `You get ${st} stroke${st > 1 ? 's' : ''} here, so a ${c.par + st} is net par.` : 'No shot here; par is net par.'}</span>${MAPPED.length ? `<button class="btn small" data-hole="${MAPPED[0]}">Go to hole ${MAPPED[0]}</button>` : ''}</div>
+      <p class="note">Mapped so far: ${MAPPED.length ? MAPPED.map((n) => `hole ${n}`).join(', ') : 'none'}. The rest are being traced from the satellite imagery.</p>`;
+    return;
+  }
   if (!R) { el.innerHTML = '<p class="note">Working out your best route…</p>'; return; }
   if (R.error) { el.innerHTML = `<div class="banner">${esc(R.error)}</div>`; return; }
   const row = R.rows[pick], best = R.rows[0], t = tee();
-  const aimPt = { x: t.x + Math.sin(row.ang) * row.total, y: t.y + Math.cos(row.ang) * row.total };
-  const waterCarry = lineCarry(t, row.ang, LIE.W, 160);
+  const waterCarry = lineCarry(t, row.ang, LIE.W, Math.min(160, row.carry));
   const sec = row.second;
   const sh = sec ? sec.shares : {};
   const share = (k) => sh[k] || 0;
   let html = '';
-  if (p.sample) html += `<div class="banner"><span>These are <b>sample numbers</b> for a ${p.hcp}-handicap ${p.gender === 'F' ? 'lady golfer' : 'golfer'}. Enter your own distances and accuracy to get your real plan.</span><button class="btn small" data-go="bag">Enter my bag</button></div>`;
+  if (p.sample) html += `<div class="banner"><span>These are <b>sample numbers</b> for a ${p.hcp}-handicap ${p.gender === 'F' ? 'lady golfer' : 'golfer'}. Enter your own distances, accuracy and shot shape to get your real plan.</span><button class="btn small" data-go="bag">Enter my bag</button></div>`;
   html += `<div class="kpis">
     <div class="kpi"><b>${row.mean.toFixed(2)}</b><span>Average score on this hole</span></div>
     <div class="kpi"><b>${pct(row.npb)}</b><span>Net par or better (net par ${R.netPar})</span></div>
@@ -344,8 +453,9 @@ function renderPlan() {
   html += `<div class="plancard">`;
   html += `<div class="shot"><div class="shotno">Tee</div><div>
      <h3>${esc(row.name)}${pick === 0 ? '' : ' <span class="note">(alternative)</span>'}</h3>
-     <p>Aim at ${describeAim(aimPt)}, about ${yd(row.total)} yds out.${waterCarry ? ` On this line you need <b>${waterCarry} yds of carry</b> to clear the pond.` : ''}</p>
+     <p>Aim ${aimText(H, t, pin(), row).replace(/^(?!straight|\d)/, 'at ')}.${startText(row.curve)}${waterCarry ? ` On this line you need <b>${waterCarry} yds of carry</b> to clear the water.` : ''}</p>
      <div class="chips">
+       <span class="chip"><i style="background:#7CFC9A"></i>Green ${pct(share(LIE.G))}</span>
        <span class="chip"><i style="background:#fff;border:1px solid var(--line)"></i>Fairway ${pct(share(LIE.F))}</span>
        <span class="chip"><i style="background:#C9D98B"></i>Rough ${pct(share(LIE.R))}</span>
        <span class="chip"><i style="background:#FF9F43"></i>Trees ${pct(share(LIE.T))}</span>
@@ -353,17 +463,9 @@ function renderPlan() {
        <span class="chip"><i style="background:#FF5A4E"></i>Water ${pct(share(LIE.W))}</span>
      </div></div></div>`;
   if (sec) {
-    if (sec.short) {
-      html += `<div class="shot"><div class="shotno">Next</div><div><h3>${sec.lie === LIE.G ? 'Putt' : 'Chip or pitch'}</h3><p>A typical tee shot finishes about ${yd(sec.d)} yds from the pin. ${sec.lie === LIE.G ? 'Two putts for your par.' : 'Get it on the green and two-putt.'}</p></div></div>`;
-    } else {
-      const off = Math.tan((sec.aimDeg * Math.PI) / 180) * sec.d;
-      const aimTxt = Math.abs(off) < 3 ? 'straight at the flag' : `${yd(Math.abs(off))} yds ${off > 0 ? 'right' : 'left'} of the flag`;
-      const bunkerCarry = lineCarry(sec, sec.ang, LIE.S, sec.d + 5);
-      html += `<div class="shot"><div class="shotno">Shot 2</div><div><h3>${esc(sec.name)}</h3>
-        <p>From a typical finish about <b>${yd(sec.d)} yds</b> from the pin (${LIE_NAME[sec.lie]}). Aim ${aimTxt}.${bunkerCarry ? ` The front bunker needs ${bunkerCarry} yds of carry on this line.` : ''}</p>
-        <div class="chips"><span class="chip"><i style="background:#7CFC9A"></i>Green ${pct(sec.green)}</span><span class="chip"><i style="background:#E8C77A"></i>Bunker ${pct(sec.sand)}</span>${sec.water > 0.004 ? `<span class="chip"><i style="background:#FF5A4E"></i>Water ${pct(sec.water)}</span>` : ''}</div></div></div>`;
-    }
-    html += `<div class="shot"><div class="shotno">Then</div><div><p>${R.netPar > 4 ? `You get ${R.strokes} stroke${R.strokes > 1 ? 's' : ''} here, so a ${R.netPar} is net par. A bogey is a good score; don't chase a birdie.` : 'No shot here. Par is the target.'}</p></div></div>`;
+    html += nextShotHtml(sec, 'Shot 2');
+    if (sec.next && !sec.next.short) html += nextShotHtml(sec.next, 'Shot 3');
+    html += `<div class="shot"><div class="shotno">Then</div><div><p>${R.strokes > 0 ? `You get ${R.strokes} stroke${R.strokes > 1 ? 's' : ''} here, so a ${R.netPar} is net par. ${R.strokes === 1 ? "A bogey is a good score; don't chase a birdie." : 'Play for the middle of the green.'}` : 'No shot here. Par is the target.'}</p></div></div>`;
   }
   html += `</div>`;
   // distribution
@@ -375,7 +477,7 @@ function renderPlan() {
     html += `<p class="why">Driver averages ${drv.mean.toFixed(2)} with ${pct(drv.blow)} blow-up risk${drv.water > 0.01 ? ` and finds water ${pct(drv.water)} of the time` : ''}. ${esc(best.name)} averages ${best.mean.toFixed(2)} with ${pct(best.blow)} blow-up risk. ${S.objective === 'safe' ? 'For playing to your handicap, the safer club wins.' : ''}</p>`;
   } else if (pick === 0 && drv === best) {
     const alt = R.rows[1];
-    if (alt) html += `<p class="why">Driver is the right play for your numbers. It leaves a short pitch, and the pond only catches a badly mishit shot (${pct(drv.water)}). Next best is ${esc(alt.name)} at ${alt.mean.toFixed(2)}.</p>`;
+    if (alt) html += `<p class="why">Driver is the right play for your numbers.${drv.water > 0.004 ? ` Water comes into play on ${pct(drv.water)} of drives.` : ''} Next best is ${esc(alt.name)} at ${alt.mean.toFixed(2)}.</p>`;
   }
   // alternatives
   html += `<div><h2>Tee shot options</h2><p class="note">Each option is simulated 2,500 times through to the hole, using your bag. Tap a row to see it on the map.</p>
@@ -386,8 +488,58 @@ function renderPlan() {
 }
 $('#panel-plan').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-pick]'); if (tr) { pick = +tr.dataset.pick; renderPlan(); drawMap(); return; }
+  const h = e.target.closest('[data-hole]'); if (h) { goHole(+h.dataset.hole); return; }
   const b = e.target.closest('[data-go]'); if (b) { S.tab = b.dataset.go; save(); showTab(); }
 });
+
+// ---------- round plan panel ----------
+let roundBusy = false;
+async function fillRound() {
+  renderRound();
+  if (roundBusy) return;
+  roundBusy = true;
+  try {
+    for (;;) {
+      const n = MAPPED.find((m) => !plan(m).res);
+      if (n === undefined || S.tab !== 'round') break;
+      await plan(n).p;
+      renderRound();
+    }
+  } finally { roundBusy = false; }
+}
+function strokesText(h) {
+  h = Math.max(0, Math.round(+h || 0));
+  const base = Math.floor(h / 18), extra = h % 18, one = (k) => (k === 1 ? 'one' : k === 2 ? 'two' : String(k));
+  if (!base && !extra) return 'none';
+  const ex = extra ? `${extra === 1 ? 'on the SI 1 hole' : `on SI 1–${extra}`}` : '';
+  return base ? `${one(base)} on every hole${extra ? `, plus one more ${ex}` : ''}` : `one ${ex}`;
+}
+function renderRound() {
+  const p = cur(), el = $('#panel-round');
+  let done = 0, tPar = 0, tAvg = 0, tStab = 0, tNet = 0;
+  const rows = SCORECARD.holes.map((c, i) => {
+    const n = i + 1, st = strokesFor(p.hcp, c.si), Hh = HOLES[n];
+    const head = `<td>${n}</td><td>${c.par}</td><td>${c.si}</td><td>${st || ''}</td><td>${c.par + st}</td>`;
+    if (!Hh || !Hh.mapped) return `<tr>${head}<td class="soonc" colspan="4">Coming soon</td></tr>`;
+    const res = plan(n).res;
+    if (!res) return `<tr>${head}<td class="soonc" colspan="4">Working it out…</td></tr>`;
+    if (res.error) return `<tr>${head}<td class="soonc" colspan="4">${esc(res.error)}</td></tr>`;
+    const r = res.rows[0];
+    prepareHole(Hh);
+    done++; tPar += c.par; tAvg += r.mean; tStab += r.stab; tNet += c.par + st;
+    const aim = aimText(Hh, Hh.tees[p.tee], Hh.pins[S.pin], r) + (Math.abs(r.curve) >= 2 ? ` (${r.curve < 0 ? 'draw' : 'fade'})` : '');
+    return `<tr class="clickable" data-hole="${n}">${head}<td style="text-align:left">${esc(r.name)}</td><td style="text-align:left;white-space:normal;min-width:12em">${esc(aim)}</td><td>${r.mean.toFixed(2)}</td><td>${r.stab.toFixed(1)}</td></tr>`;
+  });
+  const pending = MAPPED.length - done;
+  el.innerHTML = `<p class="note">${esc(p.name)} · ${p.tee} tees · playing handicap ${p.hcp} · ${S.pin.toLowerCase()} pins · ${S.objective === 'safe' ? 'playing to handicap safely' : 'lowest average'}. Tap a hole to open its game plan.</p>
+   ${pending ? `<p class="prog">Working out ${pending} of ${MAPPED.length} mapped hole${MAPPED.length > 1 ? 's' : ''}…</p>` : ''}
+   <div class="tablewrap"><table><thead><tr><th>Hole</th><th>Par</th><th>SI</th><th>Shots</th><th>Net par</th><th style="text-align:left">Tee club</th><th style="text-align:left">Aim</th><th>Avg</th><th>Stbl</th></tr></thead><tbody>
+   ${rows.join('')}
+   ${done ? `<tr class="sum"><td colspan="4">Mapped holes (${done})</td><td>${tNet}</td><td colspan="2" style="text-align:left">par ${tPar}</td><td>${tAvg.toFixed(1)}</td><td>${tStab.toFixed(1)}</td></tr>` : ''}
+   </tbody></table></div>
+   <p class="note">Shots = strokes you receive from your playing handicap (${p.hcp}) and the stroke index: ${strokesText(p.hcp)}.</p>`;
+}
+$('#panel-round').addEventListener('click', (e) => { const tr = e.target.closest('tr[data-hole]'); if (tr) goHole(+tr.dataset.hole, true); });
 
 // ---------- bag panel ----------
 let confirmDel = false;
@@ -398,18 +550,20 @@ function renderBag() {
       <div class="field"><label for="f-name">Name</label><input id="f-name" value="${esc(p.name)}" style="width:12em"></div>
       <div class="field"><label for="f-hcp">Playing handicap</label><input id="f-hcp" type="number" min="0" max="54" step="1" value="${p.hcp}" style="width:6em"></div>
       <div class="field"><label for="f-g">Plays from</label><select id="f-g"><option value="M" ${p.gender === 'M' ? 'selected' : ''}>Men's tees</option><option value="F" ${p.gender === 'F' ? 'selected' : ''}>Ladies' tees</option></select></div>
-      <div class="field"><label for="f-bias">Usual miss</label><select id="f-bias"><option value="L" ${p.bias === 'L' ? 'selected' : ''}>Left (hook/draw)</option><option value="S" ${p.bias === 'S' ? 'selected' : ''}>Both ways</option><option value="R" ${p.bias === 'R' ? 'selected' : ''}>Right (slice/fade)</option></select></div>
+      <div class="field"><label for="f-shape">Stock shape</label><select id="f-shape"><option value="D" ${p.shape === 'D' ? 'selected' : ''}>Draw (curves left)</option><option value="S" ${p.shape === 'S' ? 'selected' : ''}>Straight</option><option value="F" ${p.shape === 'F' ? 'selected' : ''}>Fade (curves right)</option></select></div>
+      <div class="field"><label for="f-curve">Curve</label><select id="f-curve" ${p.shape === 'S' ? 'disabled' : ''}>${[[1, 'Small'], [2, 'Medium'], [3, 'Big']].map(([v, l]) => `<option value="${v}" ${+p.curve === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
       <div class="field"><label for="f-acc">Accuracy as</label><select id="f-acc"><option value="yds" ${p.accMode === 'yds' ? 'selected' : ''}>± yards side miss</option><option value="pct" ${p.accMode === 'pct' ? 'selected' : ''}>% on target</option></select></div>
     </div>
-    <p class="note">Carry is where the ball lands; total includes roll. ${p.accMode === 'pct' ? '“% on target” means fairways hit for woods and greens hit from a good lie for irons.' : '“± yds” is how far left or right a normal shot finishes from your aim. Leave it blank and the app estimates it from your handicap.'} Confidence: 1 = avoid this club, 5 = trust it under pressure.</p>
+    <p class="note">Carry is where the ball lands; total includes roll. ${p.accMode === 'pct' ? '“% on target” means fairways hit for woods and greens hit from a good lie for irons.' : '“± yds” is how far left or right a normal shot finishes from your aim. Leave it blank and the app estimates it from your handicap.'} Confidence: 1 = avoid this club, 5 = trust it under pressure. Shape: your stock shape applies to every club unless you pick another one for that club. With a draw or fade, about two in three misses go the way the ball curves, and the plan tells you where to start the ball (right-handed).</p>
     <div class="bag" id="bag">
-      <div class="bagrow head"><span>Club</span><span>Carry</span><span>Total</span><span>${p.accMode === 'pct' ? '% on tgt' : '± yds'}</span><span>Conf.</span><span>Use</span></div>
+      <div class="bagrow head"><span>Club</span><span>Carry</span><span>Total</span><span>${p.accMode === 'pct' ? '% on tgt' : '± yds'}</span><span>Conf.</span><span>Shape</span><span>Use</span></div>
       ${p.clubs.map((c, i) => `<div class="bagrow ${c.on ? '' : 'off'}" data-i="${i}">
         <input aria-label="Club name" data-k="name" value="${esc(c.name)}">
         <input aria-label="${esc(c.name)} carry" data-k="carry" type="number" inputmode="numeric" value="${c.carry}">
         <input aria-label="${esc(c.name)} total" data-k="total" type="number" inputmode="numeric" value="${c.total}">
         <input aria-label="${esc(c.name)} accuracy" data-k="acc" type="number" inputmode="numeric" placeholder="auto" value="${c.acc}">
         <select aria-label="${esc(c.name)} confidence" data-k="conf">${[1, 2, 3, 4, 5].map((v) => `<option ${+c.conf === v ? 'selected' : ''}>${v}</option>`).join('')}</select>
+        <select aria-label="${esc(c.name)} shape" data-k="shape">${SHAPES.map(([v, l]) => `<option value="${v}" ${(c.shape || '') === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
         <input aria-label="Use ${esc(c.name)}" data-k="on" type="checkbox" ${c.on ? 'checked' : ''}>
       </div>`).join('')}
     </div>
@@ -422,85 +576,85 @@ function renderBag() {
     <div class="row">
       <button class="btn ghost small" id="addPlayer">Add teammate</button>
       ${S.players.length > 1 ? (confirmDel ? `<span class="confirm">Delete ${esc(p.name)}? <button class="btn danger small" id="delYes">Delete</button><button class="btn ghost small" id="delNo">Keep</button></span>` : `<button class="btn danger small" id="delPlayer">Delete this player</button>`) : ''}
+      <button class="btn ghost small" id="resetTeam">Reload team roster</button>
     </div>
-    <p class="note">Players are saved in this browser only. Each teammate can open this page on their own phone and enter their bag.</p>
+    <p class="note">The AAA Titans roster is preloaded with playing handicaps; ladies start on the Red tees. Bags are saved in this browser only, so each teammate can open this page on their own phone and enter theirs.</p>
   </div>`;
 }
 $('#panel-bag').addEventListener('input', (e) => {
   const p = cur(), t = e.target;
-  if (t.id === 'f-name') { p.name = t.value; renderHeaderOnly(); }
-  else if (t.id === 'f-hcp') { p.hcp = Math.max(0, Math.min(54, +t.value || 0)); renderHeaderOnly(); }
+  if (t.id === 'f-name') { p.name = t.value; renderHeader(); }
+  else if (t.id === 'f-hcp') { p.hcp = Math.max(0, Math.min(54, +t.value || 0)); renderHeader(); }
   else if (t.dataset.k) {
     const i = +t.closest('.bagrow').dataset.i, c = p.clubs[i], k = t.dataset.k;
     if (k === 'on') { c.on = t.checked; t.closest('.bagrow').classList.toggle('off', !c.on); }
-    else if (k === 'name') c.name = t.value;
+    else if (k === 'name' || k === 'shape') c[k] = t.value;
     else if (k === 'acc') c.acc = t.value === '' ? '' : +t.value;
     else c[k] = +t.value;
   } else return;
-  p.sample = false; dirty = true; save();
+  p.sample = false; save();
 });
 $('#panel-bag').addEventListener('change', (e) => {
   const p = cur(), t = e.target;
   if (t.id === 'f-g') { p.gender = t.value; p.tee = t.value === 'F' ? 'Red' : 'Blue'; }
-  else if (t.id === 'f-bias') p.bias = t.value;
+  else if (t.id === 'f-shape') { p.shape = t.value; $('#f-curve').disabled = p.shape === 'S'; }
+  else if (t.id === 'f-curve') p.curve = +t.value;
   else if (t.id === 'f-acc') { p.accMode = t.value; p.clubs.forEach((c) => (c.acc = '')); renderBag(); }
   else return;
-  p.sample = false; dirty = true; save(); renderHeader();
+  p.sample = false; save(); renderHeader();
 });
 $('#panel-bag').addEventListener('click', (e) => {
   const p = cur(), id = e.target.id;
-  if (id === 'addClub') { p.clubs.push({ name: 'New club', carry: 100, total: 105, acc: '', conf: 3, on: true }); renderBag(); }
-  else if (id === 'resetBag') { p.clubs = sampleBag(p.hcp, p.gender); dirty = true; renderBag(); }
+  if (id === 'addClub') { p.clubs.push({ name: 'New club', carry: 100, total: 105, acc: '', conf: 3, shape: '', on: true }); renderBag(); }
+  else if (id === 'resetBag') { p.clubs = sampleBag(p.hcp, p.gender); renderBag(); }
   else if (id === 'buildPlan') { S.tab = 'plan'; save(); showTab(); refreshAll(); }
   else if (id === 'addPlayer') { S.players.push(newPlayer('New player', 'M', 18, false)); S.cur = S.players.length - 1; confirmDel = false; refreshAll(); }
   else if (id === 'delPlayer') { confirmDel = true; renderBag(); }
   else if (id === 'delNo') { confirmDel = false; renderBag(); }
   else if (id === 'delYes') { S.players.splice(S.cur, 1); S.cur = 0; confirmDel = false; refreshAll(); }
+  else if (id === 'resetTeam') {
+    // add back any roster player missing from this browser; keeps everyone's bags
+    for (const r of rosterPlayers()) if (!S.players.some((q) => q.name.toLowerCase() === r.name.toLowerCase())) S.players.push(r);
+    refreshAll();
+  }
   else return;
   save();
 });
-function renderHeaderOnly() { renderHeader(); }
 
 // ---------- hazards panel ----------
-const HAZ = [
-  { k: 'pond1', name: 'Pond in front of the tee', poly: OSM_GEOM.pond1, col: '#5AA6F0', tip: 'Penalty area. Only a topped or thin tee shot finds it, but from the back tees it sits across the left half of the line.' },
-  { k: 'pond2', name: 'Pond right of the fairway', poly: OSM_GEOM.pond2, col: '#5AA6F0', tip: 'Penalty area. It catches long tee shots that leak right.' },
-  { k: 'tl', name: 'Trees and cart path, left', poly: H.treesLeft, col: '#2F5A33', tip: 'Usually a punch-out back to the fairway.' },
-  { k: 'tc', name: 'Tree clump at the corner, left', poly: H.treesClump, col: '#2F5A33', tip: 'Blocks the left side of the landing area for longer hitters.' },
-  { k: 'tr', name: 'Trees between the ponds, right', poly: H.treesRight, col: '#2F5A33', tip: 'Blocks the approach from the right rough.' },
-  { k: 'bf', name: 'Front greenside bunker', poly: OSM_GEOM.bunkerFront, col: '#E8C77A', tip: 'Guards the front and centre of the green. Front pins sit right behind it.' },
-  { k: 'bb', name: 'Bunker behind the green', poly: OSM_GEOM.bunkerBack, col: '#E8C77A', tip: 'Catches approaches that fly long.' },
-  { k: 'br', name: 'Bunker right of the green', poly: OSM_GEOM.bunkerRightGreen, col: '#E8C77A', tip: 'Belongs to the neighbouring green, but in play if you bail out right.' },
-  { k: 'g', name: 'Green', poly: OSM_GEOM.green, col: '#7CFC9A', tip: '' },
-];
 function renderHazards() {
+  const el = $('#panel-hz');
+  if (!H) { el.innerHTML = `<p class="note">Hole ${S.hole} hasn't been mapped yet. Hazards, distances and the satellite map are coming soon.</p>`; return; }
   const t = tee(), pn = pin();
-  const base = Math.atan2(pn.x - t.x, pn.y - t.y);
-  const rows = HAZ.map((h) => {
-    let mn = 1e9, mx = 0, sx = 0, sy = 0;
-    for (const [x, y] of h.poly) { const d = Math.hypot(x - t.x, y - t.y); mn = Math.min(mn, d); mx = Math.max(mx, d); sx += x; sy += y; }
-    const cx = sx / h.poly.length, cy = sy / h.poly.length;
-    const lat = (cx - t.x) * Math.cos(base) - (cy - t.y) * Math.sin(base);
-    return { ...h, mn, mx, lat };
-  });
-  const g = rows.find((r) => r.k === 'g');
-  $('#panel-hz').innerHTML = `<p class="note">Distances from the ${cur().tee} tee, measured off the satellite outlines. “Reach” is the distance to the near edge and “carry” is the distance to clear the far edge.</p>
-   <div class="plancard">${rows.filter((r) => r.k !== 'g').map((r) => `<div class="hz"><i style="background:${r.col}"></i>
-     <div><b>${r.name}</b><div class="note">${Math.abs(r.lat) < 8 ? 'On the line' : `${yd(Math.abs(r.lat))} yds ${r.lat > 0 ? 'right' : 'left'} of the line to the pin`}. ${r.tip}</div></div>
+  const base = Math.atan2(pn.x - t.x, pn.y - t.y), ux = Math.sin(base), uy = Math.cos(base);
+  const measure = (pts) => {
+    let mn = 1e9, mx = 0, sx = 0, sy = 0, a = 1e9, b = -1e9, l0 = 1e9, l1 = -1e9;
+    for (const [x, y] of pts) {
+      const d = Math.hypot(x - t.x, y - t.y), along = (x - t.x) * ux + (y - t.y) * uy, lat = (x - t.x) * uy - (y - t.y) * ux;
+      mn = Math.min(mn, d); mx = Math.max(mx, d); sx += x; sy += y; a = Math.min(a, along); b = Math.max(b, along); l0 = Math.min(l0, lat); l1 = Math.max(l1, lat);
+    }
+    const cx = sx / pts.length, cy = sy / pts.length;
+    return { mn, mx, lat: (cx - t.x) * uy - (cy - t.y) * ux, depth: b - a, width: l1 - l0 };
+  };
+  const rows = H.hazards.filter((h) => h.name).map((h) => ({ ...h, ...measure(h.poly) }));
+  const g = measure(H.green);
+  el.innerHTML = `<p class="note">Distances from the ${cur().tee} tee, measured off the satellite outlines. “Reach” is the distance to the near edge and “carry” is the distance to clear the far edge.</p>
+   <div class="plancard">${rows.map((r) => `<div class="hz"><i style="background:${KIND_COL[r.kind]}"></i>
+     <div><b>${esc(r.name)}</b><div class="note">${Math.abs(r.lat) < 8 ? 'On the line' : `${yd(Math.abs(r.lat))} yds ${r.lat > 0 ? 'right' : 'left'} of the line to the pin`}. ${esc(r.tip || '')}</div></div>
      <div class="yd">${yd(r.mn)}–${yd(r.mx)}<small>reach – carry</small></div></div>`).join('')}
-   <div class="hz"><i style="background:#7CFC9A"></i><div><b>Green</b><div class="note">About ${yd(g.mx - g.mn)} yds deep and 37 yds wide. Front ${yd(g.mn)}, back ${yd(g.mx)}.</div></div><div class="yd">${yd(dist(t, pn))}<small>to the ${S.pin.toLowerCase()} pin</small></div></div>
+   <div class="hz"><i style="background:#7CFC9A"></i><div><b>Green</b><div class="note">About ${yd(g.depth)} yds deep and ${yd(g.width)} yds wide. Front ${yd(g.mn)}, back ${yd(g.mx)}.</div></div><div class="yd">${yd(dist(t, pn))}<small>to the ${S.pin.toLowerCase()} pin</small></div></div>
    </div>
-   <p class="note">Out of bounds: the houses down the left, beyond the trees past about 150 yds. Tee yardages follow the official card. The GPS distance from the back of the tee box to the centre of the green is about 306.</p>`;
+   ${H.notes ? `<p class="note">${esc(H.notes)}</p>` : ''}`;
 }
 
 // ---------- scorecard panel ----------
 function renderCard() {
-  const r = SCORECARD.holes;
-  const tot = (a, b) => r.slice(a, b).reduce((s, h) => [s[0] + h.par, s[1] + h.y[0], s[2] + h.y[1], s[3] + h.y[2], s[4] + h.y[3]], [0, 0, 0, 0, 0]);
-  const line = (lab, t) => `<tr class="sum"><td>${lab}</td><td>${t[0]}</td><td></td><td>${t[1]}</td><td>${t[2]}</td><td>${t[3]}</td><td>${t[4]}</td></tr>`;
-  const hr = (h, i) => `<tr class="${i === 3 ? 'pick' : ''}"><td>${i + 1}</td><td>${h.par}</td><td>${h.si}</td><td>${h.y[0]}</td><td>${h.y[1]}</td><td>${h.y[2]}</td><td>${h.y[3]}</td></tr>`;
-  $('#panel-card').innerHTML = `<p class="note">The current par-71 card, in yards. Men play Black or Blue; ladies play White or Red. Stroke indexes are the same for men and ladies.</p>
-  <div class="tablewrap"><table><thead><tr><th>Hole</th><th>Par</th><th>SI</th><th>Black</th><th>Blue</th><th>White</th><th>Red</th></tr></thead><tbody>
+  const r = SCORECARD.holes, p = cur();
+  const tot = (a, b) => r.slice(a, b).reduce((s, h) => [s[0] + h.par, s[1] + h.y[0], s[2] + h.y[1], s[3] + h.y[2], s[4] + h.y[3], s[5] + strokesFor(p.hcp, h.si)], [0, 0, 0, 0, 0, 0]);
+  const line = (lab, t) => `<tr class="sum"><td>${lab}</td><td>${t[0]}</td><td></td><td>${t[1]}</td><td>${t[2]}</td><td>${t[3]}</td><td>${t[4]}</td><td>${t[5]}</td></tr>`;
+  const hr = (h, i) => `<tr class="clickable ${i + 1 === S.hole ? 'pick' : ''}" data-hole="${i + 1}"><td>${i + 1}${HOLES[i + 1] && HOLES[i + 1].mapped ? '' : ' <span class="note">soon</span>'}</td><td>${h.par}</td><td>${h.si}</td><td>${h.y[0]}</td><td>${h.y[1]}</td><td>${h.y[2]}</td><td>${h.y[3]}</td><td>${strokesFor(p.hcp, h.si) || ''}</td></tr>`;
+  $('#panel-card').innerHTML = `<p class="note">The current par-71 card, in yards. Men play Black or Blue; ladies play White or Red. Stroke indexes are the same for men and ladies. “Shots” are the strokes ${esc(p.name)} receives at playing handicap ${p.hcp}.</p>
+  <div class="tablewrap"><table><thead><tr><th>Hole</th><th>Par</th><th>SI</th><th>Black</th><th>Blue</th><th>White</th><th>Red</th><th>Shots</th></tr></thead><tbody>
   ${r.slice(0, 9).map((h, i) => hr(h, i)).join('')}${line('Out', tot(0, 9))}
   ${r.slice(9).map((h, i) => hr(h, i + 9)).join('')}${line('In', tot(9, 18))}${line('Total', tot(0, 18))}
   </tbody></table></div>
@@ -510,57 +664,78 @@ function renderCard() {
   <tr><td>Ladies · Red</td><td>70.6</td><td>122</td></tr>
   <tr><td>Men · Blue</td><td colspan="2" style="text-align:right">Not published yet. Ask the club.</td></tr>
   </tbody></table></div>
-  <div class="src"><span>Sources: hole-by-hole card and GPS points from <a href="https://18birdies.com/golf-courses/club/9ade3470-ba14-11ee-abbd-06780482e2ce/jaypee-greens-wish-town" target="_blank" rel="noopener">18Birdies</a>; ratings from <a href="https://www.indiagolfweekly.com/features/jaypee-wishtown-noida-unveils-new-clubhouse/" target="_blank" rel="noopener">India Golf Weekly</a>; hazard outlines from <a href="https://www.openstreetmap.org/#map=18/28.5180/77.3620" target="_blank" rel="noopener">OpenStreetMap</a>. Check the card against the one in the pro shop before the match.</span></div>`;
+  <div class="src"><span>Sources: hole-by-hole card and GPS points from <a href="https://18birdies.com/golf-courses/club/9ade3470-ba14-11ee-abbd-06780482e2ce/jaypee-greens-wish-town" target="_blank" rel="noopener">18Birdies</a>; ratings from <a href="https://www.indiagolfweekly.com/features/jaypee-wishtown-noida-unveils-new-clubhouse/" target="_blank" rel="noopener">India Golf Weekly</a>; hazard outlines from <a href="https://www.openstreetmap.org/#map=17/28.5220/77.3590" target="_blank" rel="noopener">OpenStreetMap</a>. Check the card against the one in the pro shop before the match.</span></div>`;
 }
+$('#panel-card').addEventListener('click', (e) => { const tr = e.target.closest('tr[data-hole]'); if (tr) goHole(+tr.dataset.hole, true); });
 
 // ---------- map ----------
-const NS = 'http://www.w3.org/2000/svg';
 function poly(pts) { return pts.map(([x, y]) => `${x},${-y}`).join(' '); }
+function centroid(pts) { return [pts.reduce((a, p) => a + p[0], 0) / pts.length, pts.reduce((a, p) => a + p[1], 0) / pts.length]; }
 function drawMap() {
-  const t = tee(), pn = pin();
-  let s = `<defs><clipPath id="clip"><rect x="-95" y="-360" width="190" height="380" rx="2"/></clipPath></defs><g clip-path="url(#clip)">
-   <image href="${IMG}" x="-95" y="-360" width="190" height="380" preserveAspectRatio="none"/>
-   <polygon points="${poly(H.fairway)}" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.55)" stroke-width=".5" stroke-dasharray="2 1.5"/>
-   ${[H.treesLeft, H.treesClump, H.treesRight].map((p) => `<polygon points="${poly(p)}" fill="rgba(10,40,15,.25)" stroke="#9bd39b" stroke-width=".45" stroke-dasharray="1 1"/>`).join('')}
-   ${['pond1', 'pond2'].map((k) => `<polygon points="${poly(OSM_GEOM[k])}" fill="rgba(90,166,240,.25)" stroke="#5AA6F0" stroke-width=".7"/>`).join('')}
-   ${['bunkerFront', 'bunkerBack', 'bunkerRightGreen'].map((k) => `<polygon points="${poly(OSM_GEOM[k])}" fill="rgba(232,199,122,.25)" stroke="#E8C77A" stroke-width=".6"/>`).join('')}
-   <polygon points="${poly(OSM_GEOM.green)}" fill="rgba(124,252,154,.15)" stroke="#7CFC9A" stroke-width=".7"/>
-   <line x1="-85" y1="-110" x2="-85" y2="-360" stroke="#fff" stroke-width=".6" stroke-dasharray="3 2"/>
-   <text x="-83" y="-140" font-size="5.5" fill="#fff" class="lbl" transform="rotate(-90 -83 -140)">OUT OF BOUNDS</text>`;
-  // arcs
-  for (const r of [100, 150, 200, 250]) {
-    const a0 = -0.42, a1 = 0.42, base = Math.atan2(pn.x - t.x, pn.y - t.y);
-    const p0 = [t.x + Math.sin(base + a0) * r, -(t.y + Math.cos(base + a0) * r)], p1 = [t.x + Math.sin(base + a1) * r, -(t.y + Math.cos(base + a1) * r)];
-    s += `<path d="M${p0[0]},${p0[1]} A${r},${r} 0 0 1 ${p1[0]},${p1[1]}" fill="none" stroke="rgba(255,255,255,.45)" stroke-width=".4"/>
-      <text x="${p1[0] + 1.5}" y="${p1[1] + 1.5}" font-size="6" fill="#fff" class="lbl">${r}</text>`;
+  const map = $('#map'), soon = $('#mapSoon');
+  if (!H) {
+    const c = card(S.hole);
+    map.hidden = true; soon.hidden = false;
+    soon.innerHTML = `<b>Hole ${S.hole}</b><span>Par ${c.par} · SI ${c.si} · ${cardYds(S.hole, cur().tee)} yds from the ${cur().tee} tee</span><span>Map coming soon</span>`;
+    return;
   }
+  map.hidden = false; soon.hidden = true;
+  const t = tee(), pn = pin(), v = H.view, W = v.x1 - v.x0, Hh = v.y1 - v.y0, u = Math.max(1, Hh / 380);
+  map.setAttribute('viewBox', `${v.x0} ${-v.y1} ${W} ${Hh}`); map.style.aspectRatio = `${W} / ${Hh}`;
+  map.setAttribute('aria-label', `Satellite map of hole ${S.hole} with hazards and the recommended route`);
+  const box = `x="${v.x0}" y="${-v.y1}" width="${W}" height="${Hh}"`;
+  const of = (k) => H.hazards.filter((h) => h.kind === k);
+  let s = `<defs><clipPath id="clip"><rect ${box} rx="2"/></clipPath></defs><g clip-path="url(#clip)">
+   <image href="${IMGS[S.hole]}" ${box} preserveAspectRatio="none"/>
+   <polygon points="${poly(H.fairway)}" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.55)" stroke-width="${0.5 * u}" stroke-dasharray="2 1.5"/>
+   ${of('trees').map((h) => `<polygon points="${poly(h.poly)}" fill="rgba(10,40,15,.25)" stroke="#9bd39b" stroke-width="${0.45 * u}" stroke-dasharray="1 1"/>`).join('')}
+   ${of('water').map((h) => `<polygon points="${poly(h.poly)}" fill="rgba(90,166,240,.25)" stroke="#5AA6F0" stroke-width="${0.7 * u}"/>`).join('')}
+   ${of('sand').map((h) => `<polygon points="${poly(h.poly)}" fill="rgba(232,199,122,.25)" stroke="#E8C77A" stroke-width="${0.6 * u}"/>`).join('')}
+   <polygon points="${poly(H.green)}" fill="rgba(124,252,154,.15)" stroke="#7CFC9A" stroke-width="${0.7 * u}"/>
+   ${of('ob').map((h) => { const [cx, cy] = centroid(h.poly); const tall = Math.max(...h.poly.map((p) => p[1])) - Math.min(...h.poly.map((p) => p[1])) > Math.max(...h.poly.map((p) => p[0])) - Math.min(...h.poly.map((p) => p[0]));
+     return `<polygon points="${poly(h.poly)}" fill="rgba(255,90,78,.10)" stroke="#fff" stroke-width="${0.6 * u}" stroke-dasharray="3 2"/>
+     <text x="${cx}" y="${-cy}" font-size="${5.5 * u}" fill="#fff" class="lbl" text-anchor="middle" ${tall ? `transform="rotate(-90 ${cx} ${-cy})"` : ''}>OUT OF BOUNDS</text>`; }).join('')}`;
+  // arcs
+  const dPin = dist(t, pn), base = Math.atan2(pn.x - t.x, pn.y - t.y);
+  for (let r = 100; r < dPin - 20; r += 50) {
+    const a0 = -0.42, a1 = 0.42;
+    const p0 = [t.x + Math.sin(base + a0) * r, -(t.y + Math.cos(base + a0) * r)], p1 = [t.x + Math.sin(base + a1) * r, -(t.y + Math.cos(base + a1) * r)];
+    s += `<path d="M${p0[0]},${p0[1]} A${r},${r} 0 0 1 ${p1[0]},${p1[1]}" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="${0.4 * u}"/>
+      <text x="${p1[0] + 1.5}" y="${p1[1] + 1.5}" font-size="${6 * u}" fill="#fff" class="lbl">${r}</text>`;
+  }
+  // a flight line from a to b; shaped shots bow out to their start line
+  const flight = (a, b, curve, dash) => {
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, L = dist(a, b) || 1, rx = (b.y - a.y) / L, ry = -(b.x - a.x) / L;
+    const cx = mx - rx * curve, cy = my - ry * curve;
+    return `<path d="M${a.x},${-a.y} Q${cx},${-cy} ${b.x},${-b.y}" fill="none" stroke="var(--plan)" stroke-width="${1.2 * u}" ${dash ? 'stroke-dasharray="3 2"' : ''}/>`;
+  };
   // plan
   if (R && !R.error) {
     const row = R.rows[pick];
     const aim = { x: t.x + Math.sin(row.ang) * row.total, y: t.y + Math.cos(row.ang) * row.total };
-    for (const d of row.first.slice(0, 220)) s += `<circle class="dot" cx="${d.x}" cy="${-d.y}" r="1.1" fill="${LIECOL[d.lie]}" fill-opacity=".85"/>`;
-    s += `<line x1="${t.x}" y1="${-t.y}" x2="${aim.x}" y2="${-aim.y}" stroke="var(--plan)" stroke-width="1.2" stroke-dasharray="3 2"/>`;
-    s += `<circle cx="${aim.x}" cy="${-aim.y}" r="3" fill="none" stroke="var(--plan)" stroke-width="1"/>`;
-    const sec = row.second;
-    if (sec && !sec.short && sec.dots) {
-      for (const d of sec.dots.slice(0, 160)) s += `<circle class="dot" cx="${d.x}" cy="${-d.y}" r=".9" fill="${LIECOL[d.lie]}" fill-opacity=".8"/>`;
-      const a2 = { x: sec.x + Math.sin(sec.ang) * sec.carry, y: sec.y + Math.cos(sec.ang) * sec.carry };
-      s += `<line x1="${sec.x}" y1="${-sec.y}" x2="${a2.x}" y2="${-a2.y}" stroke="var(--plan)" stroke-width="1.2"/>`;
-      s += `<circle cx="${sec.x}" cy="${-sec.y}" r="2.2" fill="var(--plan)" stroke="#000" stroke-width=".4"/>`;
-      s += `<text x="${sec.x + 4}" y="${-sec.y + 2}" font-size="6.5" fill="#fff" class="lbl">${yd(sec.d)} to pin</text>`;
-    } else if (sec) {
-      s += `<circle cx="${sec.x}" cy="${-sec.y}" r="2.2" fill="var(--plan)" stroke="#000" stroke-width=".4"/>`;
+    for (const d of row.first.slice(0, 220)) s += `<circle class="dot" cx="${d.x}" cy="${-d.y}" r="${1.1 * u}" fill="${LIECOL[d.lie]}" fill-opacity=".85"/>`;
+    s += flight(t, aim, row.curve, true);
+    s += `<circle cx="${aim.x}" cy="${-aim.y}" r="${3 * u}" fill="none" stroke="var(--plan)" stroke-width="${u}"/>`;
+    for (let sec = row.second; sec; sec = sec.next) {
+      if (!sec.short && sec.dots) {
+        for (const d of sec.dots.slice(0, 160)) s += `<circle class="dot" cx="${d.x}" cy="${-d.y}" r="${0.9 * u}" fill="${LIECOL[d.lie]}" fill-opacity=".8"/>`;
+        const a2 = { x: sec.x + Math.sin(sec.ang) * sec.carry, y: sec.y + Math.cos(sec.ang) * sec.carry };
+        s += flight(sec, a2, sec.curve, false);
+        s += `<text x="${sec.x + 4 * u}" y="${-sec.y + 2 * u}" font-size="${6.5 * u}" fill="#fff" class="lbl">${yd(sec.d)} to pin</text>`;
+      }
+      s += `<circle cx="${sec.x}" cy="${-sec.y}" r="${2.2 * u}" fill="var(--plan)" stroke="#000" stroke-width="${0.4 * u}"/>`;
     }
   }
   // tee + pin
-  s += `<rect x="${t.x - 2.5}" y="${-t.y - 2.5}" width="5" height="5" fill="#fff" stroke="#000" stroke-width=".5"/>`;
-  s += `<line x1="${pn.x}" y1="${-pn.y}" x2="${pn.x}" y2="${-pn.y - 11}" stroke="#fff" stroke-width=".8"/><polygon points="${pn.x},${-pn.y - 11} ${pn.x + 6},${-pn.y - 9} ${pn.x},${-pn.y - 7}" fill="#E8463A"/>`;
-  s += `<text x="${t.x + 5}" y="${-t.y + 2}" font-size="6.5" fill="#fff" class="lbl">${cur().tee} tee · ${t.card}</text></g>`;
-  s += `<style>.lbl{font-family:${'Archivo Narrow, Arial Narrow, sans-serif'};font-weight:600;paint-order:stroke;stroke:rgba(0,0,0,.75);stroke-width:1.4px;}</style>`;
-  $('#map').innerHTML = s;
+  s += `<rect x="${t.x - 2.5 * u}" y="${-t.y - 2.5 * u}" width="${5 * u}" height="${5 * u}" fill="#fff" stroke="#000" stroke-width="${0.5 * u}"/>`;
+  s += `<line x1="${pn.x}" y1="${-pn.y}" x2="${pn.x}" y2="${-pn.y - 11 * u}" stroke="#fff" stroke-width="${0.8 * u}"/><polygon points="${pn.x},${-pn.y - 11 * u} ${pn.x + 6 * u},${-pn.y - 9 * u} ${pn.x},${-pn.y - 7 * u}" fill="#E8463A"/>`;
+  s += `<text x="${t.x + 5 * u}" y="${-t.y + 2 * u}" font-size="${6.5 * u}" fill="#fff" class="lbl">${cur().tee} tee · ${t.card}</text></g>`;
+  s += `<style>.lbl{font-family:${'Archivo Narrow, Arial Narrow, sans-serif'};font-weight:600;paint-order:stroke;stroke:rgba(0,0,0,.75);stroke-width:${1.4 * u}px;}</style>`;
+  map.innerHTML = s;
 }
 
 // ---------- boot ----------
+setHole(S.hole); save();
 renderHeader(); renderHazards(); renderCard(); renderBag(); showTab(); drawMap(); renderPlan(); run();
 })();
 </script>

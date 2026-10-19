@@ -11,25 +11,42 @@ function pip(x, y, poly) {
   return inside;
 }
 
+// ---- Hole set-up: features in priority order, raster and DP-grid bounds from the hole's map view ----
+const GS = 5;
+const KIND_LIE = { ob: LIE.OB, water: LIE.W, sand: LIE.S, green: LIE.G, trees: LIE.T, fairway: LIE.F };
+const KIND_ORDER = ['ob', 'water', 'sand', 'green', 'trees', 'fairway'];
+function prepareHole(H) {
+  if (H.raster) return H;
+  if (!H.features) {
+    const all = (H.hazards || []).concat([{ kind: 'green', poly: H.green }, { kind: 'fairway', poly: H.fairway }]).filter((f) => f.poly && f.poly.length > 2);
+    H.features = KIND_ORDER.flatMap((k) => all.filter((f) => f.kind === k).map((f) => ({ lie: KIND_LIE[k], poly: f.poly })));
+  }
+  const v = H.view;
+  H.R = { x0: v.x0 - 20, y0: v.y0 - 5 }; H.R.w = v.x1 + 20 - H.R.x0 + 1; H.R.h = v.y1 + 15 - H.R.y0 + 1;
+  H.G = { x0: Math.ceil((v.x0 + 15) / GS) * GS, y0: Math.ceil((v.y0 + 5) / GS) * GS };
+  H.G.nx = Math.floor((v.x1 - 15 - H.G.x0) / GS) + 1; H.G.ny = Math.floor((v.y1 - 15 - H.G.y0) / GS) + 1;
+  H.raster = buildRaster(H);
+  return H;
+}
+
 // ---- Lie raster (1 yd) ----
-const RX0 = -110, RX1 = 120, RY0 = -25, RY1 = 375, RW = RX1 - RX0 + 1, RH = RY1 - RY0 + 1;
-function buildRaster(hole) {
-  const r = new Uint8Array(RW * RH);
-  for (let j = 0; j < RH; j++) {
-    const y = RY0 + j;
-    for (let i = 0; i < RW; i++) {
-      const x = RX0 + i;
+function buildRaster(H) {
+  const { x0, y0, w, h } = H.R, r = new Uint8Array(w * h);
+  for (let j = 0; j < h; j++) {
+    const y = y0 + j;
+    for (let i = 0; i < w; i++) {
+      const x = x0 + i;
       let l = LIE.R;
-      for (const f of hole.features) if (pip(x, y, f.poly)) { l = f.lie; break; }
-      r[j * RW + i] = l;
+      for (const f of H.features) if (pip(x, y, f.poly)) { l = f.lie; break; }
+      r[j * w + i] = l;
     }
   }
   return r;
 }
 function lieAt(H, x, y) {
-  const i = Math.round(x) - RX0, j = Math.round(y) - RY0;
-  if (i < 0 || j < 0 || i >= RW || j >= RH) return LIE.T;
-  return H.raster[j * RW + i];
+  const R = H.R, i = Math.round(x) - R.x0, j = Math.round(y) - R.y0;
+  if (i < 0 || j < 0 || i >= R.w || j >= R.h) return LIE.T;
+  return H.raster[j * R.w + i];
 }
 
 // ---- Short game & putting baselines (scratch values, then handicap add-on) ----
@@ -75,6 +92,17 @@ function clubKind(name) {
   if (/^(pw|gw|aw|sw|lw)|wedge/.test(n)) return 'wedge';
   return 'iron';
 }
+// Shot shape (right-handed): stock shape per player, optional per-club override such as 'D2' (draw, medium).
+// Misses are lopsided toward the curve side (65/35, same overall spread); draws roll 8% more, fades 8% less.
+const SHAPE_CURVE = { 1: 0.03, 2: 0.06, 3: 0.1 }; // start-line offset as a share of carry: small / medium / big
+const SKEW_C = 1.3, SKEW_O = 0.7; // split-normal sides: 65% of shots on the curve side, average miss distance unchanged
+function shapeOf(p, c) {
+  const o = c && c.shape ? String(c.shape) : '';
+  const st = p.shape || (p.bias === 'L' ? 'D2' : p.bias === 'R' ? 'F2' : 'S');
+  const v = /^[DSF][123]?$/.test(o) ? o : st;
+  const dir = v[0] === 'D' ? -1 : v[0] === 'F' ? 1 : 0, size = dir ? +(v[1] || 2) : 0;
+  return { dir, size };
+}
 function makePlayer(p) {
   const h = Math.max(-5, Math.min(40, +p.hcp || 0));
   const hp = Math.max(0, h);
@@ -99,8 +127,8 @@ function makePlayer(p) {
     const sD = carry * (0.03 + 0.0022 * hp) * cfSpread;
     const kMul = kind === 'driver' ? 1.3 : kind === 'wood' ? 1.15 : kind === 'hybrid' ? 1.0 : kind === 'wedge' ? 0.7 : 0.9;
     const pm = Math.min(0.4, (0.012 + 0.0055 * hp) * kMul * cfMis);
-    const bias = p.bias === 'R' ? 0.3 * sLat : p.bias === 'L' ? -0.3 * sLat : 0;
-    shots.push({ name: c.name, kind, type: 'full', carry, roll: total - carry, sLat, sD, pm, bias, conf });
+    const sh = shapeOf(p, c);
+    shots.push({ name: c.name, kind, type: 'full', carry, roll: (total - carry) * (1 - 0.08 * sh.dir), sLat, sD, pm, bias: 0, conf, skew: sh.dir, curve: sh.dir * carry * (SHAPE_CURVE[sh.size] || 0) });
   }
   shots.sort((a, b) => b.carry - a.carry);
   // partial pitches below the shortest full club
@@ -124,47 +152,51 @@ function normals(n, seed) {
 const S_GOOD = normals(24, 7), S_MIS = normals(6, 11), S_TEE_GOOD = normals(400, 13), S_TEE_MIS = normals(80, 17);
 
 // ---- Shot physics ----
-// returns {x,y,lie,pen,ob,landLie} — pen = penalty strokes (water); ob = true means stroke-and-distance
-function shoot(H, x, y, lie, s, ang, z, mis) {
+// returns {x,y,lie,pen,ob,water,wx,wy} — pen = penalty strokes (water); ob = true means stroke-and-distance.
+// Pass `o` to reuse one result object (the DP inner loop does, to spare the garbage collector).
+const TRIG = { a: NaN, s: 0, c: 1 };
+function res(o, ob, x, y, lie, pen, water, wx, wy) { o.ob = ob; o.x = x; o.y = y; o.lie = lie; o.pen = pen; o.water = water; o.wx = wx; o.wy = wy; return o; }
+function shoot(H, x, y, lie, s, ang, z, mis, o) {
+  if (!o) o = {};
   let carry = s.carry, roll = s.roll, sLat = s.sLat, sD = s.sD;
   if (lie === LIE.R && s.type === 'full') { carry *= 0.93; sLat *= 1.15; sD *= 1.25; }
   if (lie === LIE.S && s.type !== 'punch') { carry *= 0.85; sLat *= 1.3; sD *= 1.3; }
   let c, lat;
+  if (s.skew) sLat *= z[0] * s.skew > 0 ? SKEW_C : SKEW_O;
   if (mis) { c = carry * (0.35 + 0.4 * z[2]); lat = s.bias + z[0] * sLat * 1.6; roll = roll * 0.8 + 8; }
   else { c = carry + z[1] * sD; lat = s.bias + z[0] * sLat; }
-  const dx = Math.sin(ang), dy = Math.cos(ang);
+  if (ang !== TRIG.a) { TRIG.a = ang; TRIG.s = Math.sin(ang); TRIG.c = Math.cos(ang); }
+  const dx = TRIG.s, dy = TRIG.c;
   // landing point
   const lx = x + dx * c + dy * lat, ly = y + dy * c - dx * lat;
   let l = lieAt(H, lx, ly);
-  if (l === LIE.OB) return { ob: true };
-  if (l === LIE.W) return waterDrop(H, x, y, lx, ly);
-  if (l === LIE.S || l === LIE.T) return { x: lx, y: ly, lie: l, pen: 0 };
+  if (l === LIE.OB) return res(o, true);
+  if (l === LIE.W) return waterDrop(H, x, y, lx, ly, o);
+  if (l === LIE.S || l === LIE.T) return res(o, false, lx, ly, l, 0, false);
   // roll along the flight direction (slightly drifting with the miss)
   const rm = l === LIE.F ? 1 : l === LIE.G ? 0.55 : 0.35;
   let r = roll * rm, px = lx, py = ly, ux = (lx - x), uy = (ly - y); const ul = Math.hypot(ux, uy) || 1; ux /= ul; uy /= ul;
   while (r > 0) {
     const st = Math.min(3, r); const nx = px + ux * st, ny = py + uy * st; const nl = lieAt(H, nx, ny);
-    if (nl === LIE.W) return waterDrop(H, x, y, nx, ny);
-    if (nl === LIE.OB) return { ob: true };
+    if (nl === LIE.W) return waterDrop(H, x, y, nx, ny, o);
+    if (nl === LIE.OB) return res(o, true);
     px = nx; py = ny; l = nl; r -= st;
     if (nl === LIE.S || nl === LIE.T) break;
     if (nl === LIE.R) r = Math.min(r, roll * 0.15);
   }
-  return { x: px, y: py, lie: l, pen: 0 };
+  return res(o, false, px, py, l, 0, false);
 }
-function waterDrop(H, x0, y0, wx, wy) {
+function waterDrop(H, x0, y0, wx, wy, o) {
   // walk back along the line from the water toward the start until dry, then 2 yds more
   const L = Math.hypot(wx - x0, wy - y0) || 1, ux = (x0 - wx) / L, uy = (y0 - wy) / L;
   let px = wx, py = wy, k = 0;
   while (lieAt(H, px, py) === LIE.W && k < 400) { px += ux; py += uy; k++; }
   px += ux * 2; py += uy * 2;
   let l = lieAt(H, px, py); if (l === LIE.W || l === LIE.OB || l === LIE.G) l = LIE.R;
-  return { x: px, y: py, lie: l === LIE.F ? LIE.F : l, pen: 1, water: true, wx, wy };
+  return res(o || {}, false, px, py, l, 1, true, wx, wy);
 }
 
-// ---- Dynamic programming over a 5-yd grid ----
-const GX0 = -75, GX1 = 85, GY0 = -15, GY1 = 345, GS = 5;
-const GNX = (GX1 - GX0) / GS + 1, GNY = (GY1 - GY0) / GS + 1;
+// ---- Dynamic programming over a 5-yd grid (bounds per hole, see prepareHole) ----
 const DP_LIES = [LIE.R, LIE.F, LIE.S, LIE.T];
 const AIM_DP = [-14, -7, 0, 7, 14].map((d) => (d * Math.PI) / 180);
 
@@ -178,7 +210,8 @@ function eligible(s, lie, d) {
 }
 
 function solve(H, player, pin) {
-  const h = player.h, shots = player.shots;
+  prepareHole(H);
+  const h = player.h, shots = player.shots, { x0: GX0, y0: GY0, nx: GNX, ny: GNY } = H.G;
   const V = {}, P = {};
   for (const L of DP_LIES) { V[L] = new Float32Array(GNX * GNY).fill(NaN); P[L] = new Int16Array(GNX * GNY * 2).fill(-1); }
   const cells = [];
@@ -198,9 +231,12 @@ function solve(H, player, pin) {
   }
   cells.sort((a, b) => a.d - b.d);
   const ctx = { H, V, pin, h };
+  const clubV = new Float64Array(shots.length);
   for (let sweep = 0; sweep < 2; sweep++) {
     for (const c of cells) {
-      const best = bestAction(ctx, shots, c.x, c.y, c.L, c.d, AIM_DP, S_GOOD, S_MIS, V[c.L][c.j * GNX + c.i]);
+      // the second sweep re-checks only the SWEEP2_CLUBS best clubs of the first sweep (speed; values barely move)
+      const best = bestAction(ctx, shots, c.x, c.y, c.L, c.d, AIM_DP, S_GOOD, S_MIS, V[c.L][c.j * GNX + c.i], sweep ? c.top : null, sweep ? null : clubV);
+      if (!sweep) c.top = topClubs(clubV, SWEEP2_CLUBS);
       V[c.L][c.j * GNX + c.i] = best.v;
       P[c.L][(c.j * GNX + c.i) * 2] = best.s; P[c.L][(c.j * GNX + c.i) * 2 + 1] = best.a;
     }
@@ -210,38 +246,47 @@ function solve(H, player, pin) {
 function initV(d, L, h) { return Math.max(2, 2.55 + d / 110 + h * 0.03 + (L === LIE.R ? 0.15 : L === LIE.T ? 0.6 : L === LIE.S ? 0.3 : 0)); }
 
 function valueAt(ctx, x, y, lie) {
-  const { pin, h, V } = ctx;
+  const { pin, h, V } = ctx, { x0: GX0, y0: GY0, nx: GNX, ny: GNY } = ctx.H.G;
   const d = Math.hypot(x - pin.x, y - pin.y);
   if (lie === LIE.G) return puttE(d * 3, h);
   if (d <= SG_R) return sgE(d, lie, h);
   const L = lie === LIE.F || lie === LIE.R || lie === LIE.S || lie === LIE.T ? lie : LIE.R;
   const fx = Math.max(0, Math.min(GNX - 1.001, (x - GX0) / GS)), fy = Math.max(0, Math.min(GNY - 1.001, (y - GY0) / GS));
   const i = Math.floor(fx), j = Math.floor(fy), tx = fx - i, ty = fy - j;
-  const g = (ii, jj) => { let v = V[L][jj * GNX + ii]; if (isNaN(v)) { v = V[LIE.R][jj * GNX + ii] + (L === LIE.T ? 0.5 : L === LIE.S ? 0.3 : L === LIE.F ? -0.15 : 0); } if (isNaN(v)) v = initV(d, L, h) + 0.5; return v; };
-  return (g(i, j) * (1 - tx) + g(i + 1, j) * tx) * (1 - ty) + (g(i, j + 1) * (1 - tx) + g(i + 1, j + 1) * tx) * ty;
+  const VL = V[L], VR = V[LIE.R], add = L === LIE.T ? 0.5 : L === LIE.S ? 0.3 : L === LIE.F ? -0.15 : 0, k = j * GNX + i;
+  return (gridV(VL, VR, add, k, d, L, h) * (1 - tx) + gridV(VL, VR, add, k + 1, d, L, h) * tx) * (1 - ty) +
+    (gridV(VL, VR, add, k + GNX, d, L, h) * (1 - tx) + gridV(VL, VR, add, k + GNX + 1, d, L, h) * tx) * ty;
 }
+function gridV(VL, VR, add, k, d, L, h) { let v = VL[k]; if (v !== v) { v = VR[k] + add; if (v !== v) v = initV(d, L, h) + 0.5; } return v; }
 
+const SCRATCH = {};
 function evalAction(ctx, s, x, y, lie, ang, good, mis, selfV) {
   let eg = 0, em = 0;
-  const one = (z, m) => {
-    const o = shoot(ctx.H, x, y, lie, s, ang, z, m);
-    if (o.ob) return 1 + selfV;
-    return o.pen + valueAt(ctx, o.x, o.y, o.lie);
-  };
-  for (const z of good) eg += one(z, false);
-  for (const z of mis) em += one(z, true);
+  const o = SCRATCH;
+  for (let k = 0; k < good.length; k++) { shoot(ctx.H, x, y, lie, s, ang, good[k], false, o); eg += o.ob ? 1 + selfV : o.pen + valueAt(ctx, o.x, o.y, o.lie); }
+  for (let k = 0; k < mis.length; k++) { shoot(ctx.H, x, y, lie, s, ang, mis[k], true, o); em += o.ob ? 1 + selfV : o.pen + valueAt(ctx, o.x, o.y, o.lie); }
   return 1 + (1 - s.pm) * (eg / good.length) + s.pm * (em / mis.length);
 }
 
-function bestAction(ctx, shots, x, y, lie, d, aims, good, mis, selfV) {
+const SWEEP2_CLUBS = 4;
+function topClubs(clubV, k) {
+  const idx = [];
+  for (let i = 0; i < clubV.length; i++) if (clubV[i] < Infinity) idx.push(i);
+  return idx.sort((a, b) => clubV[a] - clubV[b]).slice(0, k);
+}
+// only: shot indices to try (null = all); clubV: filled with each shot's best value over the aims
+function bestAction(ctx, shots, x, y, lie, d, aims, good, mis, selfV, only, clubV) {
   const base = Math.atan2(ctx.pin.x - x, ctx.pin.y - y);
   let best = { v: Infinity, s: -1, a: 0 };
+  if (clubV) clubV.fill(Infinity);
   for (let si = 0; si < shots.length; si++) {
     const s = shots[si];
+    if (only && !only.includes(si)) continue;
     if (!eligible(s, lie, d)) continue;
     const aimsUse = s.type === 'punch' ? [-60, -35, -15, 0, 15, 35, 60].map((q) => (q * Math.PI) / 180) : aims;
     for (let ai = 0; ai < aimsUse.length; ai++) {
       const v = evalAction(ctx, s, x, y, lie, base + aimsUse[ai], good, mis, isFinite(selfV) ? selfV : 5);
+      if (clubV && v < clubV[si]) clubV[si] = v;
       if (v < best.v) best = { v, s: si, a: Math.round((aimsUse[ai] * 180) / Math.PI) };
     }
   }
@@ -270,7 +315,7 @@ function teeOptions(sol, tee) {
 }
 
 function policyAt(sol, x, y, lie) {
-  const L = DP_LIES.includes(lie) ? lie : LIE.R;
+  const L = DP_LIES.includes(lie) ? lie : LIE.R, { x0: GX0, y0: GY0, nx: GNX, ny: GNY } = sol.H.G;
   const i = Math.max(0, Math.min(GNX - 1, Math.round((x - GX0) / GS))), j = Math.max(0, Math.min(GNY - 1, Math.round((y - GY0) / GS)));
   let s = sol.P[L][(j * GNX + i) * 2], a = sol.P[L][(j * GNX + i) * 2 + 1];
   if (s < 0 && L !== LIE.R) { s = sol.P[LIE.R][(j * GNX + i) * 2]; a = sol.P[LIE.R][(j * GNX + i) * 2 + 1]; }
@@ -314,4 +359,4 @@ function playouts(sol, tee, opt, n, seed) {
   return { scores, water: waterCount[0] / n, firstLand };
 }
 
-if (typeof module !== 'undefined') module.exports = { LIE, LIE_NAME, buildRaster, lieAt, makePlayer, solve, teeOptions, playouts, policyAt, puttE, sgE, valueAt, shoot };
+if (typeof module !== 'undefined') module.exports = { LIE, LIE_NAME, prepareHole, shapeOf, buildRaster, lieAt, makePlayer, solve, teeOptions, playouts, policyAt, puttE, sgE, valueAt, shoot };
