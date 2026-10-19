@@ -1,0 +1,33 @@
+// Hole 3 — Jaypee Greens Wish Town. Hole frame: origin = back tee, y = yards toward the green centre, x = yards right.
+// Hazards from OpenStreetMap; fairway, trees and OB traced from satellite imagery (±5 yds).
+HOLES[3] = {
+  number: 3, par: 4, si: 3, mapped: true,
+  frame: {lat: 28.5198826, lon: 77.3595973, bearing: 160.332},
+  view: {x0: -95, x1: 95, y0: -20, y1: 495},
+  tees: {
+    Black: {x: 0, y: -6, card: 438},
+    Blue: {x: 6, y: 19, card: 413},
+    White: {x: 8, y: 55, card: 377},
+    Red: {x: 11, y: 72, card: 360},
+  },
+  pins: {Front: {x: 3, y: 424}, Middle: {x: 3, y: 432}, Back: {x: 3, y: 441}},
+  green: OSM[3].green,
+  fairway: [[2,100],[10,100],[10,240],[30,245],[55,240],[75,245],[80,300],[70,345],[35,335],[15,330],[0,330],[-3,250],[-2,170]],
+  hazards: [
+    { kind: 'ob', poly: [[-110,-20],[-20,-20],[-18,350],[-30,365],[-110,365]], name: 'Out of bounds, left', tip: 'The construction site and houses behind the trees on the left. Stroke and distance.' },
+    { kind: 'ob', poly: [[-110,478],[110,478],[110,500],[-110,500]], name: 'Out of bounds, long', tip: 'Houses behind the green; only a big miss long gets there.' },
+    { kind: 'water', poly: OSM[3].water1, name: 'Pond right of the drive', tip: 'Penalty area. Runs from about 95 to 235 yds on the right; a slice or a drive that does not carry it is wet. The carry to the fairway beyond it is about 220 from Blue.' },
+    { kind: 'water', poly: OSM[3].water2, name: 'Pond in front of the green', tip: 'Penalty area. Covers the front of the green; the approach must carry it. Short hitters lay up right of it and pitch on.' },
+    { kind: 'sand', poly: OSM[3].bunker12, name: 'Fairway bunker, centre (315)', tip: 'In the middle of the fairway where a good drive or lay-up finishes.' },
+    { kind: 'sand', poly: OSM[3].bunker9, name: 'Fairway bunker, right (260)', tip: 'Right edge of the landing area.' },
+    { kind: 'sand', poly: OSM[3].bunker10, name: 'Fairway bunker, right (285)', tip: 'Right edge of the landing area.' },
+    { kind: 'sand', poly: OSM[3].bunker11, name: 'Fairway bunker, right (315)', tip: 'Right edge of the landing area.' },
+    { kind: 'sand', poly: OSM[3].bunker14, name: 'Bunker left of the green', tip: 'Catches a pulled approach.' },
+    { kind: 'sand', poly: OSM[3].bunker15, name: 'Bunker right of the green', tip: 'Catches approaches bailed out right of the pond.' },
+    { kind: 'sand', poly: OSM[3].bunker16, name: 'Bunker right of the green, back', tip: 'Catches approaches bailed out right of the pond.' },
+    { kind: 'trees', poly: [[-20,90],[-5,90],[-3,350],[-18,350]], name: 'Tree strip and cart path, left', tip: 'A narrow strip between the fairway and the boundary; usually a chip-out.' },
+    { kind: 'trees', poly: [[5,335],[30,335],[32,365],[10,368]], name: 'Trees short of the pond', tip: 'Block the approach from the left side of the lay-up area.' },
+    { kind: 'trees', poly: [[75,330],[95,330],[95,420],[45,420],[45,380],[55,350]], name: 'Trees, right of the green', tip: 'Thick trees right of the lay-up; a punch-out.' },
+  ],
+  notes: 'Tee yardages follow the official card. The hardest hole on the front nine (SI 3): a pond up the right off the tee, OB left, and a second pond in front of the green.',
+};
