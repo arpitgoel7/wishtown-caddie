@@ -44,9 +44,16 @@ def merc(lat, lon, z):
 def tile(z, x, y):
     os.makedirs(CACHE, exist_ok=True)
     f = os.path.join(CACHE, f'{z}_{x}_{y}.jpg')
-    if not os.path.exists(f):
-        subprocess.run(['curl', '-sS', '--max-time', '30', '-o', f, TILE_URL.format(z=z, x=x, y=y)], check=True)
-    return Image.open(f)
+    for attempt in range(4):
+        try:
+            if not os.path.exists(f):
+                subprocess.run(['curl', '-sS', '--max-time', '30', '-o', f, TILE_URL.format(z=z, x=x, y=y)], check=True)
+            img = Image.open(f); img.load()
+            return img
+        except Exception:
+            # a timed-out download leaves a partial file behind; drop it and fetch again
+            if os.path.exists(f): os.remove(f)
+            if attempt == 3: raise
 
 def crop(to_ll, xmin, xmax, ymin, ymax, z=19, px_per_yd=3):
     """Satellite crop of the local box (any rotation), top = ymax, left = xmin, at px_per_yd."""
