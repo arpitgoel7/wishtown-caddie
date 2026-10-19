@@ -12,8 +12,13 @@ Prompt: `Run Batch 0 from TASKS.md.`
 - [x] App: hole picker (1–18), "Round plan" tab listing the chosen club/aim on every mapped hole; unmapped holes show "coming soon".
 - [x] `tools/build.py` → `dist/index.html`; screenshot check; publish to the same artifact URL.
 
-## Batch 1 — Map holes 1–6  ☐
+## Batch 1 — Map holes 1–6  ☑
 Prompt: `Run Batch 1 from TASKS.md: map holes 1, 2, 3, 5, 6 and re-check 4 using the map-hole skill.`
+- [x] Holes 1, 2, 3, 5, 6 mapped; Hole 4 re-checked (unchanged; scratch 3.75 / 18 hcp 4.56).
+- [x] Hole 2 Blue tee moved onto the bank (GPS point fell in the pond); untraced OSM-missing bunkers added on holes 5 and 6.
+- [x] `tools/geo.py` retries truncated satellite tiles.
+- [ ] Hole 2 solves in ~3–4 s (over the ~3 s budget); owner to decide whether to speed up the engine.
+- [ ] Don't re-run `prep_hole.py 04`: the current tool renumbers Hole 4's OSM keys, which `h04.js` relies on.
 
 ## Batch 2 — Map holes 7–12  ☐
 Prompt: `Run Batch 2 from TASKS.md: map holes 7–12 using the map-hole skill.`
