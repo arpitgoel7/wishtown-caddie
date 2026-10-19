@@ -1,0 +1,78 @@
+{
+ "team": "AAA Titans",
+ "note": "Handicaps are PLAYING handicaps (already format-adjusted).",
+ "players": [
+  {
+   "name": "Anoop Singh",
+   "playingHandicap": 16,
+   "tee": "Red",
+   "reserve": false
+  },
+  {
+   "name": "Brig Pawan Bajaj",
+   "playingHandicap": 14,
+   "tee": "Blue",
+   "reserve": false
+  },
+  {
+   "name": "Aadesh Chopra",
+   "playingHandicap": 18,
+   "tee": "Blue",
+   "reserve": false
+  },
+  {
+   "name": "Arpit Goel",
+   "playingHandicap": 18,
+   "tee": "Blue",
+   "reserve": false
+  },
+  {
+   "name": "Vikas Suda",
+   "playingHandicap": 18,
+   "tee": "Blue",
+   "reserve": false
+  },
+  {
+   "name": "Gunjan Bijlani",
+   "playingHandicap": 11,
+   "tee": "Red",
+   "reserve": false
+  },
+  {
+   "name": "Nyra Singh",
+   "playingHandicap": 2,
+   "tee": "Red",
+   "reserve": false
+  },
+  {
+   "name": "Rahul Sharma",
+   "playingHandicap": 10,
+   "tee": "Blue",
+   "reserve": false
+  },
+  {
+   "name": "Nitin Sahjwani",
+   "playingHandicap": 9,
+   "tee": "Blue",
+   "reserve": true
+  },
+  {
+   "name": "Murli Mohan Malla",
+   "playingHandicap": 9,
+   "tee": "Blue",
+   "reserve": false
+  },
+  {
+   "name": "Naresh Rawat",
+   "playingHandicap": 8,
+   "tee": "Blue",
+   "reserve": true
+  },
+  {
+   "name": "Deepak Yadav",
+   "playingHandicap": 7,
+   "tee": "Blue",
+   "reserve": false
+  }
+ ]
+}
