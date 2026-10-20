@@ -32,8 +32,11 @@ HOLES[2] = {
     { kind: 'sand', poly: OSM[2].bunker16, name: 'Bunker right of the green', tip: 'Catches a pushed approach to the back half.' },
     { kind: 'sand', poly: OSM[2].bunker17, name: 'Bunker back right', tip: 'Catches approaches that fly long and right.' },
     { kind: 'trees', poly: [[-72,130],[-48,130],[-50,280],[-58,300],[-45,400],[-35,470],[-72,470]], name: 'Tree line, left', tip: 'Thick on the left all the way; usually a chip-out.' },
-    { kind: 'trees', poly: [[15,345],[40,340],[45,400],[40,450],[28,445],[20,400]], name: 'Trees in the middle, right of the lay-up', tip: 'Block the line to the green from the right side of the fairway. Lay up left of them.' },
+    { kind: 'trees', poly: [[-3,120],[20,120],[22,175],[12,195],[0,190],[-4,160]], name: 'Trees down the middle (120–195)', tip: 'The start of a line of trees that splits the hole in two. A topped or short drive on the centre line finishes behind them.' },
+    { kind: 'trees', poly: [[2,200],[15,200],[22,240],[25,275],[12,280],[4,240]], name: 'Scattered trees down the middle (200–280)', tip: 'Thinner trees between the two fairways; often a clear shot out, sometimes not.' },
+    { kind: 'trees', poly: [[-14,285],[10,282],[20,300],[32,320],[32,400],[15,400],[3,360],[-5,330],[-14,318]], name: 'Trees down the middle (285–400)', tip: 'Dense trees that split the fairway. The left side is the wide route to the green; from the right you play around them.' },
+    { kind: 'trees', poly: [[13,400],[45,400],[50,425],[40,455],[22,455],[13,430]], name: 'Trees short right of the green', tip: 'Block the line to the green from the right side of the fairway. Lay up left of them.' },
     { kind: 'trees', poly: [[45,200],[88,200],[88,470],[45,470],[48,400],[50,340],[55,300]], name: 'Trees and cart path, right', tip: 'Scattered trees along the right; a punch-out back to the fairway.' },
   ],
-  notes: 'Tee yardages follow the official card. The Blue tee is placed on the left bank of the pond (the GPS point fell in the water). A three-shot hole for most: drive over the corner of the pond, lay up left of the trees at about 400, then pitch in away from the lake.',
+  notes: 'Tee yardages follow the official card. The Blue tee is placed on the left bank of the pond (the GPS point fell in the water). A three-shot hole for most: drive over the corner of the pond, lay up left of the trees at about 400, then pitch in away from the lake. A line of trees runs down the middle from about 120 to 450 yds: the left half of the fairway is the open route.',
 };

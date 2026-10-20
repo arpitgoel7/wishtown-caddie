@@ -26,6 +26,8 @@ HOLES[3] = {
     { kind: 'sand', poly: OSM[3].bunker15, name: 'Bunker right of the green', tip: 'Catches approaches bailed out right of the pond.' },
     { kind: 'sand', poly: OSM[3].bunker16, name: 'Bunker right of the green, back', tip: 'Catches approaches bailed out right of the pond.' },
     { kind: 'trees', poly: [[-20,90],[-5,90],[-3,350],[-18,350]], name: 'Tree strip and cart path, left', tip: 'A narrow strip between the fairway and the boundary; usually a chip-out.' },
+    { kind: 'trees', poly: [[-3,250],[8,250],[15,300],[22,330],[5,335],[-3,330]], name: 'Trees on the left edge of the landing area', tip: 'Trees between the fairway and the cart path from about 250 to 335; a pulled drive is blocked from the green.' },
+    { kind: 'trees', poly: [[48,245],[58,245],[60,330],[50,330]], name: 'Tree hedge by the right bunkers', tip: 'A line of small trees beside the right fairway bunkers.' },
     { kind: 'trees', poly: [[5,335],[30,335],[32,365],[10,368]], name: 'Trees short of the pond', tip: 'Block the approach from the left side of the lay-up area.' },
     { kind: 'trees', poly: [[75,330],[95,330],[95,420],[45,420],[45,380],[55,350]], name: 'Trees, right of the green', tip: 'Thick trees right of the lay-up; a punch-out.' },
   ],

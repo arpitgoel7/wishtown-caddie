@@ -25,8 +25,11 @@ HOLES[6] = {
     { kind: 'sand', poly: OSM[6].bunker11, name: 'Bunker left of the green', tip: 'Between the green and the pond.' },
     { kind: 'sand', poly: OSM[6].bunker10, name: 'Bunker right of the green', tip: 'Catches the bail-out away from the pond.' },
     { kind: 'sand', poly: OSM[6].bunker12, name: 'Bunker beyond the right bunker', tip: 'Neighbouring: belongs to the next green, but in play for a big miss right.' },
+    { kind: 'trees', poly: [[-12,210],[-2,210],[-2,250],[-3,280],[-2,300],[0,325],[-10,327],[-12,300],[-17,280],[-17,255],[-12,240]], name: 'Trees down the middle (210–325)', tip: 'A line of trees through the centre of the fairway, left of the two centre bunkers. Pick a side: right of them is the wider landing area.' },
+    { kind: 'trees', poly: [[0,312],[15,315],[20,330],[18,352],[8,355],[0,340]], name: 'Tree clump in the middle (315–355)', tip: 'Blocks the approach from the centre of the fairway.' },
+    { kind: 'trees', poly: [[12,352],[47,352],[47,372],[30,374],[14,370]], name: 'Trees short right of the green', tip: 'Block a low approach from the right side.' },
     { kind: 'trees', poly: [[-75,40],[-48,40],[-45,120],[-50,200],[-50,300],[-55,400],[-75,450]], name: 'Trees and cart path, left', tip: 'A punch-out back to the fairway.' },
     { kind: 'trees', poly: [[60,120],[95,120],[95,330],[70,330],[65,225]], name: 'Trees, right', tip: 'Scattered trees right of the pond.' },
   ],
-  notes: 'Tee yardages follow the official card. The hardest hole on the course (SI 1): carry the pond off the tee, avoid the pond right of the landing area, and keep the approach right of the pond by the green.',
+  notes: 'Tee yardages follow the official card. The hardest hole on the course (SI 1): carry the pond off the tee, avoid the pond right of the landing area, and keep the approach right of the pond by the green. Trees run down the middle of the fairway from about 210 to 355.',
 };
