@@ -238,8 +238,9 @@ function eligible(s, lie, d) {
   return s.carry <= d + 35;
 }
 
-// risk: extra cost per finish in sand / trees / water / OB when choosing shots ('Play to handicap safely'); 0 = lowest average
-const SAFE_RISK = 0; // off: tested 0.5–1.5 on holes 2 and 4 and blow-ups went up, not down (see docs/LOGIC.md)
+// risk: extra cost per finish in sand or trees when choosing shots ('Play to handicap safely'; water and OB already
+// carry their penalty strokes); 0 = lowest average
+const SAFE_RISK = 0.3;
 function solve(H, player, pin, risk = 0) {
   prepareHole(H);
   const h = player.h, shots = player.shots, { x0: GX0, y0: GY0, nx: GNX, ny: GNY } = H.G;
@@ -294,8 +295,8 @@ const SCRATCH = {};
 function evalAction(ctx, s, x, y, lie, ang, good, mis, selfV) {
   let eg = 0, em = 0;
   const o = SCRATCH, r = ctx.risk || 0;
-  for (let k = 0; k < good.length; k++) { shoot(ctx.H, x, y, lie, s, ang, good[k], false, o); eg += o.ob ? 1 + selfV + r : o.pen + valueAt(ctx, o.x, o.y, o.lie) + (o.pen || o.lie === LIE.S || o.lie === LIE.T ? r : 0); }
-  for (let k = 0; k < mis.length; k++) { shoot(ctx.H, x, y, lie, s, ang, mis[k], true, o); em += o.ob ? 1 + selfV + r : o.pen + valueAt(ctx, o.x, o.y, o.lie) + (o.pen || o.lie === LIE.S || o.lie === LIE.T ? r : 0); }
+  for (let k = 0; k < good.length; k++) { shoot(ctx.H, x, y, lie, s, ang, good[k], false, o); eg += o.ob ? 1 + selfV : o.pen + valueAt(ctx, o.x, o.y, o.lie) + (o.lie === LIE.S || o.lie === LIE.T ? r : 0); }
+  for (let k = 0; k < mis.length; k++) { shoot(ctx.H, x, y, lie, s, ang, mis[k], true, o); em += o.ob ? 1 + selfV : o.pen + valueAt(ctx, o.x, o.y, o.lie) + (o.lie === LIE.S || o.lie === LIE.T ? r : 0); }
   return 1 + (1 - s.pm) * (eg / good.length) + s.pm * (em / mis.length);
 }
 
