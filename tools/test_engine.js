@@ -1,4 +1,4 @@
-// Sanity run across handicaps:  node tools/test_engine.js [NN] [--shape D2]
+// Sanity run across handicaps:  node tools/test_engine.js [NN] [--shape D2] [--safe]  (--safe = 'Play to handicap safely' hazard penalty)
 // Hole 4 benchmarks (Blue, middle pin, straight): scratch ≈ 3.8, 9 ≈ 4.2, 18 ≈ 4.6, 27 ≈ 5.0; ladies Red 18 ≈ 4.5.
 const fs = require('fs'), path = require('path');
 const dir = __dirname + '/../src/holes';
@@ -6,6 +6,7 @@ globalThis.HOLES = {}; globalThis.OSM = {};
 for (const f of fs.readdirSync(dir).sort((a, b) => a.includes('-osm') ? -1 : b.includes('-osm') ? 1 : a.localeCompare(b))) eval(fs.readFileSync(path.join(dir, f), 'utf8'));
 const E = require('../src/engine.js');
 const n = +(process.argv.find((a) => /^\d+$/.test(a)) || 4);
+const risk = process.argv.includes('--safe') ? E.SAFE_RISK : 0;
 const shape = process.argv.includes('--shape') ? process.argv[process.argv.indexOf('--shape') + 1] : 'S';
 const H = HOLES[n]; E.prepareHole(H);
 function bag(h,gender){
@@ -14,11 +15,11 @@ function bag(h,gender){
   const f=1+(18-h)*0.008;
   return (gender=='F'?lad:men).map(([n,c,t])=>({name:n,carry:Math.round(c*f),total:Math.round(t*f),acc:'',conf:3,on:true}));
 }
-console.log(`Hole ${n} par ${H.par} SI ${H.si} shape ${shape}  grid ${H.G.nx}x${H.G.ny}`);
+console.log(`Hole ${n} par ${H.par} SI ${H.si} shape ${shape}${risk ? ' safe' : ''}  grid ${H.G.nx}x${H.G.ny}`);
 for (const [h,g,tee] of [[0,'M','Blue'],[9,'M','Blue'],[18,'M','Blue'],[27,'M','Blue'],[18,'F','Red'],[30,'F','Red']]){
   const t0=Date.now();
   const P=E.makePlayer({hcp:h,clubs:bag(h,g),shape});
-  const sol=E.solve(H,P,H.pins.Middle);
+  const sol=E.solve(H,P,H.pins.Middle,risk);
   const t1=Date.now();
   const opts=E.teeOptions(sol,H.tees[tee]);
   const t2=Date.now();

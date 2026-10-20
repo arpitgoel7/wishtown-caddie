@@ -17,6 +17,7 @@ All distances in yards. σ = one standard deviation. `h` = playing handicap (≥
 Tour baselines (Broadie) plus handicap add-on:
 - Off green: + h × 0.020 (fairway), 0.025 (rough), 0.035 (sand); trees = rough + 0.35.
 - Putting: + h × (0.004 + 0.00008 × feet).
+- Over trouble: from inside 40 yds, if the straight line from the ball to the pin crosses water, sand or trees before it reaches the green (not counting the bunker or trees the ball is already in), add water 0.15 + 0.02·h, sand 0.06 + 0.012·h, trees 0.10 + 0.012·h (each counted once). Before this, any spot within 40 yds was valued by its lie alone, so a pitch over the lake or a bunker looked as easy as an open one. (Added in Batch 1; estimates, to calibrate against real scores.)
 
 ## 3. Route optimisation
 - Each hole has its own frame: origin at the back tee, y along the line back tee → green centre (18Birdies GPS), x to the right, in yards. Tees sit where tee → middle pin equals the card yardage.
@@ -25,6 +26,7 @@ Tour baselines (Broadie) plus handicap add-on:
 - Tee: every full club × 21 aims (±20°, 2° steps) × (400 good + 80 mishit samples). Top 6 + driver are played to the hole 2,500 times each using the stored policy.
 - Penalties: water = +1, drop on the line 2 yds behind the entry point. OB = stroke and distance.
 - Goals: **Play to handicap safely** = minimise avg + 1.0 × P(net double bogey or worse). **Lowest average** = minimise avg.
+- Hazard penalty for the safe goal (Batch 1, currently **off**): the engine can add a fixed cost to every finish in sand, trees, water or OB when it chooses each shot, not just the tee shot (`SAFE_RISK` in `src/engine.js`). Tested at 0.5, 1.0 and 1.5 strokes: only around 1.5 does an 18 handicap lay up on the Hole 2 second shot, and there the average rises (5.69 → 6.03) and double bogey or worse goes up (15% → 23%; 27 hcp 39% → 52%). Smaller values change little and also nudge doubles up. Left at 0 until the owner decides.
 - Strokes received on a hole: floor(PH/18) + (PH mod 18 ≥ SI ? 1 : 0), PH = playing handicap; net par = par + strokes.
 - Outputs: avg score, P(net par or better), Stableford average (2 + net par − score, floor 0), blow-up risk, water %, landing mix, second shot (and a third on long holes), plus a round plan with the chosen tee club and aim on every mapped hole.
 

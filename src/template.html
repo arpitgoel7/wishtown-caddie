@@ -187,7 +187,7 @@ function compute(req) {
   const ph = Math.max(0, Math.round(+profile.hcp || 0));
   const strokes = Math.floor(ph / 18) + ((ph % 18) >= H.si ? 1 : 0);
   const netPar = H.par + strokes;
-  const sol = solve(H, P, pin);
+  const sol = solve(H, P, pin, objective === 'safe' ? SAFE_RISK : 0);
   const opts = teeOptions(sol, tee);
   const cand = opts.slice(0, 6);
   const drv = opts.find((o) => o.shot.kind === 'driver'); if (drv && !cand.includes(drv)) cand.push(drv);

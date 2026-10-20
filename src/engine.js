@@ -71,6 +71,35 @@ function sgE(d, lie, h) {
   return interp(SGT[L], d) + h * SG_ADD[L] + (lie === LIE.T ? 0.35 : 0);
 }
 const SG_R = 40; // within this many yards of the pin (off the green) use short-game baseline
+// The baseline only knows the lie, so a short shot that has to go over trouble costs extra: walk the line from the
+// ball to the pin and charge for water / sand / trees crossed before it reaches the green (base + per handicap stroke).
+const OVER_W = [0.15, 0.02], OVER_S = [0.06, 0.012], OVER_T = [0.1, 0.012];
+function overMask(H, pin) { // per pin: bit 1 water, 2 sand, 4 trees on the line from each 1-yd spot within SG_R
+  const key = pin.x + ',' + pin.y;
+  if (H.over && H.over.key === key) return H.over;
+  const w = 2 * SG_R + 1, x0 = Math.round(pin.x) - SG_R, y0 = Math.round(pin.y) - SG_R, m = new Uint8Array(w * w);
+  for (let j = 0; j < w; j++) for (let i = 0; i < w; i++) {
+    const x = x0 + i, y = y0 + j, d = Math.hypot(x - pin.x, y - pin.y);
+    if (d > SG_R) continue;
+    const st = lieAt(H, x, y), n = Math.ceil(d);
+    let b = 0, leaving = true;
+    for (let k = 1; k < n; k++) {
+      const l = lieAt(H, x + ((pin.x - x) * k) / n, y + ((pin.y - y) * k) / n);
+      if (leaving && l === st) continue; // the ball's own bunker / trees are already in the baseline
+      leaving = false;
+      if (l === LIE.G) break;
+      if (l === LIE.W) b |= 1; else if (l === LIE.S) b |= 2; else if (l === LIE.T) b |= 4;
+    }
+    m[j * w + i] = b;
+  }
+  return (H.over = { key, w, x0, y0, m });
+}
+function overCost(H, pin, x, y, h) {
+  const o = overMask(H, pin), i = Math.round(x) - o.x0, j = Math.round(y) - o.y0;
+  if (i < 0 || j < 0 || i >= o.w || j >= o.w) return 0;
+  const b = o.m[j * o.w + i];
+  return b ? (b & 1 ? OVER_W[0] + OVER_W[1] * h : 0) + (b & 2 ? OVER_S[0] + OVER_S[1] * h : 0) + (b & 4 ? OVER_T[0] + OVER_T[1] * h : 0) : 0;
+}
 
 // ---- Player model ----
 function invNorm(p) { // Acklam approximation
@@ -209,7 +238,9 @@ function eligible(s, lie, d) {
   return s.carry <= d + 35;
 }
 
-function solve(H, player, pin) {
+// risk: extra cost per finish in sand / trees / water / OB when choosing shots ('Play to handicap safely'); 0 = lowest average
+const SAFE_RISK = 0; // off: tested 0.5–1.5 on holes 2 and 4 and blow-ups went up, not down (see docs/LOGIC.md)
+function solve(H, player, pin, risk = 0) {
   prepareHole(H);
   const h = player.h, shots = player.shots, { x0: GX0, y0: GY0, nx: GNX, ny: GNY } = H.G;
   const V = {}, P = {};
@@ -230,7 +261,7 @@ function solve(H, player, pin) {
     }
   }
   cells.sort((a, b) => a.d - b.d);
-  const ctx = { H, V, pin, h };
+  const ctx = { H, V, pin, h, risk };
   const clubV = new Float64Array(shots.length);
   for (let sweep = 0; sweep < 2; sweep++) {
     for (const c of cells) {
@@ -241,7 +272,7 @@ function solve(H, player, pin) {
       P[c.L][(c.j * GNX + c.i) * 2] = best.s; P[c.L][(c.j * GNX + c.i) * 2 + 1] = best.a;
     }
   }
-  return { V, P, pin, h, shots, H, nStates: cells.length };
+  return { V, P, pin, h, shots, H, risk, nStates: cells.length };
 }
 function initV(d, L, h) { return Math.max(2, 2.55 + d / 110 + h * 0.03 + (L === LIE.R ? 0.15 : L === LIE.T ? 0.6 : L === LIE.S ? 0.3 : 0)); }
 
@@ -249,7 +280,7 @@ function valueAt(ctx, x, y, lie) {
   const { pin, h, V } = ctx, { x0: GX0, y0: GY0, nx: GNX, ny: GNY } = ctx.H.G;
   const d = Math.hypot(x - pin.x, y - pin.y);
   if (lie === LIE.G) return puttE(d * 3, h);
-  if (d <= SG_R) return sgE(d, lie, h);
+  if (d <= SG_R) return sgE(d, lie, h) + overCost(ctx.H, pin, x, y, h);
   const L = lie === LIE.F || lie === LIE.R || lie === LIE.S || lie === LIE.T ? lie : LIE.R;
   const fx = Math.max(0, Math.min(GNX - 1.001, (x - GX0) / GS)), fy = Math.max(0, Math.min(GNY - 1.001, (y - GY0) / GS));
   const i = Math.floor(fx), j = Math.floor(fy), tx = fx - i, ty = fy - j;
@@ -262,9 +293,9 @@ function gridV(VL, VR, add, k, d, L, h) { let v = VL[k]; if (v !== v) { v = VR[k
 const SCRATCH = {};
 function evalAction(ctx, s, x, y, lie, ang, good, mis, selfV) {
   let eg = 0, em = 0;
-  const o = SCRATCH;
-  for (let k = 0; k < good.length; k++) { shoot(ctx.H, x, y, lie, s, ang, good[k], false, o); eg += o.ob ? 1 + selfV : o.pen + valueAt(ctx, o.x, o.y, o.lie); }
-  for (let k = 0; k < mis.length; k++) { shoot(ctx.H, x, y, lie, s, ang, mis[k], true, o); em += o.ob ? 1 + selfV : o.pen + valueAt(ctx, o.x, o.y, o.lie); }
+  const o = SCRATCH, r = ctx.risk || 0;
+  for (let k = 0; k < good.length; k++) { shoot(ctx.H, x, y, lie, s, ang, good[k], false, o); eg += o.ob ? 1 + selfV + r : o.pen + valueAt(ctx, o.x, o.y, o.lie) + (o.pen || o.lie === LIE.S || o.lie === LIE.T ? r : 0); }
+  for (let k = 0; k < mis.length; k++) { shoot(ctx.H, x, y, lie, s, ang, mis[k], true, o); em += o.ob ? 1 + selfV + r : o.pen + valueAt(ctx, o.x, o.y, o.lie) + (o.pen || o.lie === LIE.S || o.lie === LIE.T ? r : 0); }
   return 1 + (1 - s.pm) * (eg / good.length) + s.pm * (em / mis.length);
 }
 
@@ -296,7 +327,7 @@ function bestAction(ctx, shots, x, y, lie, d, aims, good, mis, selfV, only, club
 
 // ---- Tee-shot options and full-hole playouts ----
 function teeOptions(sol, tee) {
-  const ctx = { H: sol.H, V: sol.V, pin: sol.pin, h: sol.h };
+  const ctx = { H: sol.H, V: sol.V, pin: sol.pin, h: sol.h, risk: sol.risk };
   const d = Math.hypot(sol.pin.x - tee.x, sol.pin.y - tee.y);
   const base = Math.atan2(sol.pin.x - tee.x, sol.pin.y - tee.y);
   const out = [];
@@ -348,7 +379,7 @@ function playouts(sol, tee, opt, n, seed) {
       if (guard === 1 && !o.ob && firstLand.length < 300) firstLand.push(o.water ? { x: o.wx, y: o.wy, lie: LIE.W } : { x, y, lie });
       const d = Math.hypot(sol.pin.x - x, sol.pin.y - y);
       if (lie === LIE.G) { strokes += sampleInt(puttE(d * 3, sol.h), rnd); break; }
-      if (lie !== 'tee' && d <= SG_R) { strokes += sampleInt(sgE(d, lie, sol.h), rnd); break; }
+      if (lie !== 'tee' && d <= SG_R) { strokes += sampleInt(sgE(d, lie, sol.h) + overCost(sol.H, sol.pin, x, y, sol.h), rnd); break; }
       const pa = policyAt(sol, x, y, lie);
       s = sol.shots[pa.s];
       ang = Math.atan2(sol.pin.x - x, sol.pin.y - y) + (pa.a * Math.PI) / 180;
@@ -359,4 +390,4 @@ function playouts(sol, tee, opt, n, seed) {
   return { scores, water: waterCount[0] / n, firstLand };
 }
 
-if (typeof module !== 'undefined') module.exports = { LIE, LIE_NAME, prepareHole, shapeOf, buildRaster, lieAt, makePlayer, solve, teeOptions, playouts, policyAt, puttE, sgE, valueAt, shoot };
+if (typeof module !== 'undefined') module.exports = { SAFE_RISK, overCost, LIE, LIE_NAME, prepareHole, shapeOf, buildRaster, lieAt, makePlayer, solve, teeOptions, playouts, policyAt, puttE, sgE, valueAt, shoot };
