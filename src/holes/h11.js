@@ -1,0 +1,36 @@
+// Hole 11 — Jaypee Greens Wish Town. Hole frame: origin = back tee, y = yards toward the green centre, x = yards right.
+// Hazards from OpenStreetMap; fairway, trees and OB traced from satellite imagery (±5 yds).
+HOLES[11] = {
+  number: 11, par: 4, si: 16, mapped: true,
+  frame: {lat: 28.5159699, lon: 77.3604161, bearing: -18.036},
+  view: {x0: -95, x1: 95, y0: -20, y1: 445},
+  tees: {
+    Black: {x: 0, y: 17, card: 347},
+    Blue: {x: -4, y: 39, card: 325},
+    White: {x: -3, y: 70, card: 294},
+    Red: {x: 3, y: 97, card: 267},
+  },
+  pins: {Front: {x: -1, y: 342}, Middle: {x: -1, y: 364}, Back: {x: -1, y: 387}},
+  green: OSM[11].green,
+  fairway: [[-22,110],[48,110],[50,225],[45,240],[15,245],[10,300],[10,325],[-20,325],[-35,300],[-35,268],[-22,262]],
+  hazards: [
+    { kind: 'ob', poly: [[-110,-20],[-68,-20],[-68,450],[-110,450]], name: 'Out of bounds, left', tip: 'The road and houses beyond the tree line all down the left. Stroke and distance for a hook.' },
+    { kind: 'ob', poly: [[88,180],[110,180],[110,450],[88,450]], name: 'Out of bounds, right', tip: 'Buildings beyond the cart path on the right, level with the lake.' },
+    { kind: 'water', poly: OSM[11].water1, name: 'Pond right of the tees', tip: 'Penalty area wide right of the tees; only a big slice from the back tees.' },
+    { kind: 'water', poly: OSM[11].water2, name: 'Lake right of the green', tip: 'Penalty area from 245 to the green on the right. A drive down the right fairway or a pushed approach finds it.' },
+    { kind: 'sand', poly: OSM[11].bunker4, name: 'Bunker in the tree spine (160)', tip: 'At the foot of the trees that split the fairway.' },
+    { kind: 'sand', poly: OSM[11].bunker6, name: 'Bunker in the tree spine (190)', tip: 'Middle of the hole; catches a drive started down the centre.' },
+    { kind: 'sand', poly: OSM[11].bunker7, name: 'Fairway bunker, centre (215)', tip: 'Where the two fairways rejoin; in range for most drives.' },
+    { kind: 'sand', poly: OSM[11].bunker5, name: 'Bunker, right (160)', tip: 'Right edge of the right-hand fairway.' },
+    { kind: 'sand', poly: OSM[11].bunker8, name: 'Fairway bunker, left (280)', tip: 'Left side of the approach; long hitters reach it from the tee.' },
+    { kind: 'sand', poly: OSM[11].bunker9, name: 'Fairway bunker, left (290)', tip: 'Left side of the approach.' },
+    { kind: 'sand', poly: OSM[11].bunker10, name: 'Bunker short left of the green', tip: 'Guards the front-left.' },
+    { kind: 'sand', poly: OSM[11].bunker11, name: 'Bunker left of the green', tip: 'Beside the front half of the green on the left.' },
+    { kind: 'sand', poly: OSM[11].bunker12, name: 'Bunker on the right of the green', tip: 'Cut into the right side of the green, between it and the lake.' },
+    { kind: 'sand', poly: OSM[11].bunker13, name: 'Bunker behind the green', tip: 'Catches an approach to a back pin that flies long.' },
+    { kind: 'trees', poly: [[2,100],[28,100],[25,150],[20,175],[18,205],[8,205],[5,175],[2,150]], name: 'Tree spine splitting the fairway (100–205)', tip: 'A line of trees and bunkers down the middle. The left fairway is the shorter line; the right one is wider but brings the lake into play.' },
+    { kind: 'trees', poly: [[-22,100],[-68,100],[-68,330],[-45,330],[-40,268],[-25,265],[-22,200]], name: 'Trees and cart path, left', tip: 'Tree band before the boundary; usually a chip-out.' },
+    { kind: 'trees', poly: [[48,100],[82,100],[82,230],[52,225],[50,180]], name: 'Trees, right', tip: 'Right of the right-hand fairway.' },
+  ],
+  notes: 'Tee yardages follow the official card. A short par 4 split by a line of trees and bunkers in the middle of the fairway from 100 to 205. OB down the whole left side, and a lake right of the green.',
+};
