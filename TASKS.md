@@ -28,8 +28,15 @@ Prompt: `Run Batch 2 from TASKS.md: map holes 7–12 using the map-hole skill.`
 - [ ] Left boundaries on holes 7 and 8 are guesses (no houses visible); hole 8 has a small OB box over open land, hole 7 none. Confirm with the club.
 - [ ] Hole 12 solve ≈3.0 s (at the budget).
 
-## Batch 3 — Map holes 13–18  ☐
+## Batch 3 — Map holes 13–18  ☑
 Prompt: `Run Batch 3 from TASKS.md: map holes 13–18 using the map-hole skill.`
+- [x] Holes 13–18 mapped (18 hcp Blue, middle pin: 13 ≈4.07, 14 ≈4.53, 15 ≈4.64, 16 ≈3.74, 17 ≈5.38, 18 ≈4.91). All 18 holes are now in the app.
+- [x] Around holes 14–17 OpenStreetMap tags tee boxes and some fairways as `golf=green`, and the hole's own "green" often includes the approach. Greens on 14, 15, 16, 17 traced from the imagery to match the 18Birdies front/centre/back points; tees put on the tee boxes that match the card.
+- [x] Hole 14: the 18Birdies White/Red tee point is ~60 yds off; placed on the forward tee box that gives the card 252. The hole bends left: the tee shot carries a tree block to a fairway left of the straight line. The construction ground and apartments on the right are treated as OB; the imagery may predate the new clubhouse works.
+- [x] Hole 17 is a dogleg right (card measured round the corner), so the tees stay at their GPS points.
+- [ ] Hole 15 (SI 2) plays easier in the model (18 hcp ≈4.64) than its index suggests; Hole 17 (SI 4) is the hardest par 4 (water ≈30% for an 18 hcp). Check both against real scores.
+- [ ] Hole 17 solve ≈3.1 s (just over the budget).
+- [ ] `prep_hole.py` places tees on the straight tee→pin line; for doglegs keep the GPS tee points instead.
 
 ## Batch 4 — PDF export & AWS  ☐ (owner will schedule)
 Prompt: `Run Batch 4 from TASKS.md.`
