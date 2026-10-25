@@ -124,7 +124,19 @@ function clubKind(name) {
 // Shot shape (right-handed): stock shape per player, optional per-club override such as 'D2' (draw, medium).
 // Misses are lopsided toward the curve side (65/35, same overall spread); draws roll 8% more, fades 8% less.
 const SHAPE_CURVE = { 1: 0.03, 2: 0.06, 3: 0.1 }; // start-line offset as a share of carry: small / medium / big
-const SKEW_C = 1.3, SKEW_O = 0.7; // split-normal sides: 65% of shots on the curve side, average miss distance unchanged
+// Split normal with its peak on the aim line: 65% of shots finish on the curve side, the curve side is 65/35 = 1.86x
+// wider, and the average miss distance equals a straight hitter's with the same spread.
+const SKEW_P = 0.35, SKEW_C = 1.1927, SKEW_O = 0.6422;
+function normCdf(x) { // Abramowitz & Stegun 7.1.26
+  const t = 1 / (1 + 0.3275911 * Math.abs(x) / Math.SQRT2);
+  const e = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x / 2);
+  return x >= 0 ? 0.5 + e / 2 : 0.5 - e / 2;
+}
+// maps a standard normal draw to the shaped miss (in units of the spread, curve side positive), keeping its rank
+function skewUnit(z) {
+  const u = Math.min(1 - 1e-12, Math.max(1e-12, normCdf(z)));
+  return u < SKEW_P ? SKEW_O * invNorm(u / (2 * SKEW_P)) : SKEW_C * invNorm(0.5 + (u - SKEW_P) / (2 * (1 - SKEW_P)));
+}
 function shapeOf(p, c) {
   const o = c && c.shape ? String(c.shape) : '';
   const st = p.shape || (p.bias === 'L' ? 'D2' : p.bias === 'R' ? 'F2' : 'S');
@@ -173,9 +185,15 @@ function makePlayer(p) {
 
 // ---- Deterministic samples ----
 function mulberry32(a) { return function () { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+// Mirrored pairs (z and -z): the fixed sample sets have no built-in left/right or long/short lean.
+const MIRROR = typeof process === 'undefined' || !process.env || process.env.NO_MIRROR !== '1';
 function normals(n, seed) {
   const r = mulberry32(seed), out = [];
-  for (let i = 0; i < n; i++) { const u = Math.max(1e-9, r()), v = r(); const m = Math.sqrt(-2 * Math.log(u)); out.push([m * Math.cos(2 * Math.PI * v), m * Math.sin(2 * Math.PI * v), r()]); }
+  for (let i = 0; i < (MIRROR ? n / 2 : n); i++) {
+    const u = Math.max(1e-9, r()), v = r(); const m = Math.sqrt(-2 * Math.log(u)); const z0 = m * Math.cos(2 * Math.PI * v), z1 = m * Math.sin(2 * Math.PI * v), z2 = r();
+    out.push([z0, z1, z2, skewUnit(z0)]);
+    if (MIRROR) out.push([-z0, -z1, 1 - z2, skewUnit(-z0)]);
+  }
   return out;
 }
 const S_GOOD = normals(24, 7), S_MIS = normals(6, 11), S_TEE_GOOD = normals(400, 13), S_TEE_MIS = normals(80, 17);
@@ -191,9 +209,9 @@ function shoot(H, x, y, lie, s, ang, z, mis, o) {
   if (lie === LIE.R && s.type === 'full') { carry *= 0.93; sLat *= 1.15; sD *= 1.25; }
   if (lie === LIE.S && s.type !== 'punch') { carry *= 0.85; sLat *= 1.3; sD *= 1.3; }
   let c, lat;
-  if (s.skew) sLat *= z[0] * s.skew > 0 ? SKEW_C : SKEW_O;
-  if (mis) { c = carry * (0.35 + 0.4 * z[2]); lat = s.bias + z[0] * sLat * 1.6; roll = roll * 0.8 + 8; }
-  else { c = carry + z[1] * sD; lat = s.bias + z[0] * sLat; }
+  const zl = s.skew ? s.skew * (z.length > 3 ? z[3] : skewUnit(z[0])) : z[0]; // shaped shots: lopsided miss
+  if (mis) { c = carry * (0.35 + 0.4 * z[2]); lat = s.bias + zl * sLat * 1.6; roll = roll * 0.8 + 8; }
+  else { c = carry + z[1] * sD; lat = s.bias + zl * sLat; }
   if (ang !== TRIG.a) { TRIG.a = ang; TRIG.s = Math.sin(ang); TRIG.c = Math.cos(ang); }
   const dx = TRIG.s, dy = TRIG.c;
   // landing point
@@ -391,4 +409,4 @@ function playouts(sol, tee, opt, n, seed) {
   return { scores, water: waterCount[0] / n, firstLand };
 }
 
-if (typeof module !== 'undefined') module.exports = { SAFE_RISK, overCost, LIE, LIE_NAME, prepareHole, shapeOf, buildRaster, lieAt, makePlayer, solve, teeOptions, playouts, policyAt, puttE, sgE, valueAt, shoot };
+if (typeof module !== 'undefined') module.exports = { skewUnit, SAFE_RISK, overCost, LIE, LIE_NAME, prepareHole, shapeOf, buildRaster, lieAt, makePlayer, solve, teeOptions, playouts, policyAt, puttE, sgE, valueAt, shoot };
