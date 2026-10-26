@@ -119,6 +119,16 @@ input[type="number"] { font-variant-numeric: tabular-nums; }
 .busy::after { content: "Working out your best route…"; position: absolute; inset: 0; display: flex; align-items: flex-start; justify-content: center; padding-top: 60px; background: color-mix(in srgb, var(--bg) 70%, transparent); font-weight: 600; border-radius: var(--r); }
 .src { font-size: 12px; color: var(--muted); display: grid; gap: 4px; max-width: 80ch; }
 .src a { color: var(--accent); }
+.guide { position: fixed; inset: 0; z-index: 50; background: color-mix(in srgb, var(--bg) 92%, transparent); overflow-y: auto; padding: max(16px, env(safe-area-inset-top, 0px)) 16px 40px; }
+.guide-card { max-width: 680px; margin: 0 auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px 18px; display: grid; gap: 14px; }
+.guide-card h2 { font-size: 26px; }
+.guide-card ol { margin: 0; padding-left: 20px; display: grid; gap: 10px; }
+.guide-card li b { font-weight: 600; }
+.guide-card .who { display: grid; gap: 6px; background: var(--soft); border-radius: var(--r); padding: 12px; }
+.guide-card .who select { font-size: 16px; padding: 8px; }
+.guide-card .key { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; color: var(--muted); }
+.guide-card .key i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+.helpbtn { font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--accent); cursor: pointer; font-weight: 600; }
 .banner.warn { background: color-mix(in srgb, var(--warn) 16%, var(--surface)); border-left: 4px solid var(--warn); }
 .confirm { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; }
 @media (prefers-reduced-motion: no-preference) { .dot { transition: opacity .3s; } }
@@ -127,7 +137,7 @@ input[type="number"] { font-variant-numeric: tabular-nums; }
 <div class="wrap">
   <header class="top">
     <div>
-      <div class="eyebrow">Jaypee Greens Wish Town · Noida · Par 71</div>
+      <div class="eyebrow">Jaypee Greens Wish Town · Noida · Par 71 · <button class="helpbtn" id="helpBtn">How to use</button></div>
       <h1>Hole <span class="hn" id="hn">4</span> game plan</h1>
     </div>
     <div class="holefacts" id="facts"></div>
@@ -168,6 +178,27 @@ input[type="number"] { font-variant-numeric: tabular-nums; }
       <div class="panel" id="panel-hz" hidden></div>
       <div class="panel" id="panel-card" hidden></div>
     </section>
+  </div>
+</div>
+<div class="guide" id="guide" role="dialog" aria-modal="true" aria-labelledby="guideTitle" hidden>
+  <div class="guide-card">
+    <div><div class="eyebrow">AAA Titans · Wish Town Caddie</div><h2 id="guideTitle">How to read your caddie</h2></div>
+    <div class="who"><label for="guideWho"><b>1. Who are you?</b> Pick your name once; this phone remembers it.</label><select id="guideWho"></select></div>
+    <ol start="2">
+      <li><b>Choose a hole</b> with the ‹ › arrows or the Hole list at the top. Your tee (Blue for men, Red for ladies), the pin (front, middle, back) and the goal are next to it.
+        <b>Play to handicap safely</b> avoids big numbers; <b>Lowest average</b> chases the best score.</li>
+      <li><b>Game plan</b> is your caddie for that hole:
+        the four boxes show your <b>average score</b>, how often you make <b>net par or better</b>, your average <b>Stableford points</b> and the <b>blow-up risk</b> (net double bogey or worse).
+        Below that: the <b>tee club and where to aim</b> (and where to start the ball if you draw or fade it), then the <b>next shot</b>, your likely scores, and the other tee clubs it tried. Tap a row to see that club on the map.</li>
+      <li><b>The map</b>: the yellow line is your route, each dot is where a shot finishes.
+        <div class="key"><span><i style="background:#F2C230"></i>Your route</span><span><i style="background:#fff;border:1px solid #ccc"></i>Fairway</span><span><i style="background:#E9F5C9"></i>Rough</span><span><i style="background:#FF9F43"></i>Trees</span><span><i style="background:#E8C77A"></i>Bunker</span><span><i style="background:#FF5A4E"></i>Water / OB</span><span><i style="background:#7CFC9A"></i>Green</span></div>
+        White arcs are distances from your tee.</li>
+      <li><b>Round plan</b> lists your tee club, aim, average and Stableford on all 18 holes, and the strokes you get on each. Tap a hole to open it.</li>
+      <li><b>My bag</b> is where you <b>add or edit</b> your clubs: carry and total distance, side miss (± yds), confidence, and your shot shape (draw, straight or fade, and any club that curves differently). Until you enter yours, the plan uses <b>sample numbers</b> for your handicap. Your bag is saved on this phone only.</li>
+      <li><b>Hazards</b> lists every bunker, pond, tree line and OB with the distance to reach and to carry it from your tee. <b>Scorecard</b> has the card, ratings and your strokes per hole.</li>
+    </ol>
+    <p class="note">The plan is an estimate from satellite maps and a golf model, not a guarantee. Yardages follow the card except where a hole says otherwise (hole 1's tees are currently set forward and are approximate). Always check the markers on the day.</p>
+    <button class="btn" id="guideGo">Show my game plan</button>
   </div>
 </div>
 
@@ -737,8 +768,34 @@ function drawMap() {
   map.innerHTML = s;
 }
 
+// ---------- first screen: how to read the app + who are you ----------
+function openGuide() {
+  $('#guideWho').innerHTML = S.players.map((q, i) => `<option value="${i}" ${i === S.cur ? 'selected' : ''}>${esc(q.name)} · ${q.hcp} hcp${q.reserve ? ' (reserve)' : ''}</option>`).join('');
+  $('#guide').hidden = false; $('#guide').scrollTop = 0; $('#guideWho').focus({ preventScroll: true });
+}
+$('#helpBtn').addEventListener('click', openGuide);
+$('#guideGo').addEventListener('click', () => {
+  const i = +$('#guideWho').value;
+  const changed = i !== S.cur;
+  S.cur = i; S.seenGuide = true; save();
+  $('#guide').hidden = true;
+  if (changed) refreshAll();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('#guide').hidden) $('#guideGo').click(); });
+// a personal link may carry the player (…#p=Rahul Sharma or ?p=…); used only when the viewer passes it through
+function playerFromLink() {
+  try {
+    const m = (location.hash + '&' + location.search).match(/[#?&]p=([^&]+)/);
+    if (!m) return -1;
+    const want = decodeURIComponent(m[1].replace(/\+/g, ' ')).trim().toLowerCase();
+    return S.players.findIndex((q) => q.name.toLowerCase() === want || q.name.toLowerCase().split(' ')[0] === want);
+  } catch (e) { return -1; }
+}
+{ const i = playerFromLink(); if (i >= 0) S.cur = i; }
+
 // ---------- boot ----------
 setHole(S.hole); save();
 renderHeader(); renderHazards(); renderCard(); renderBag(); showTab(); drawMap(); renderPlan(); run();
+if (!S.seenGuide) openGuide();
 })();
 </script>
