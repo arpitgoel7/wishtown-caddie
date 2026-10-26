@@ -326,6 +326,7 @@ function applyTeamBags() {
   }
 }
 applyTeamBags();
+for (const p of S.players) { const r = ROSTER.players.find((q) => q.name === p.name); if (r) p.reserve = !!r.reserve; } // roster decides reserves
 if (!HOLES[S.hole] && !SCORECARD.holes[S.hole - 1]) S.hole = MAPPED[0] || 1;
 function save() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) { } }
 const cur = () => S.players[Math.min(S.cur, S.players.length - 1)];

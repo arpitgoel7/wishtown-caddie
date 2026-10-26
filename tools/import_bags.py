@@ -18,6 +18,8 @@ OVERRIDES = {
 
 # players whose third number was a distance spread (+/- yds), not a left/right miss: side miss is left blank so the
 # app estimates it from the handicap (owner, Oct 2026)
+# bump to make phones re-load unedited form bags after an import-rule change
+REV = ' r2'
 IGNORE_SIDE = {'Deepak Yadav', 'Nitin Sahjwani'}
 
 def rows_from(path):
@@ -74,12 +76,15 @@ def main():
             if name in IGNORE_SIDE: side = 0
             clubs.append({'name': c, 'carry': carry, 'total': total, 'acc': side or '', 'conf': conf,
                           'shape': OVERRIDES.get(name, {}).get(c, ''), 'on': True})
-        try: hcp = int(round(float(r.get('Playing handicap'))))
-        except (TypeError, ValueError): hcp = None
+        # the roster's playing handicap is authoritative (owner); the form's value is only reported
+        try: form_hcp = int(round(float(r.get('Playing handicap'))))
+        except (TypeError, ValueError): form_hcp = None
+        hcp = next(p['playingHandicap'] for p in roster if p['name'] == name)
+        if form_hcp is not None and form_hcp != hcp: print(f'  {name}: form says handicap {form_hcp}, using roster {hcp}')
         notes = '; '.join(str(r.get(k)).strip() for k in ('Any club that curves differently? (optional)', 'Any other club? (optional)',
                           'Anything else about your game? (optional)') if r.get(k) and str(r.get(k)).strip().lower() not in ('no', 'na'))
         out[name] = {'hcp': hcp, 'tee': r.get('Tees you play') or None, 'shape': shape, 'curve': curve, 'clubs': clubs,
-                     'updated': str(r.get('Timestamp')), 'notes': notes}
+                     'updated': str(r.get('Timestamp')) + REV, 'notes': notes}
         print(f"{name:20s} hcp {hcp} {r.get('Tees you play')} shape {shape}{curve if shape != 'S' else ''} clubs {len(clubs)}"
               + (f'  notes: {notes}' if notes else ''))
     json.dump({'players': out}, open(f'{ROOT}/data/bags.json', 'w'), indent=1, ensure_ascii=False)

@@ -1,7 +1,7 @@
 {
  "players": {
   "Deepak Yadav": {
-   "hcp": 6,
+   "hcp": 7,
    "tee": "Blue",
    "shape": "F",
    "curve": 1,
@@ -133,7 +133,7 @@
      "on": true
     }
    ],
-   "updated": "2026-10-26 20:55:24.693000",
+   "updated": "2026-10-26 20:55:24.693000 r2",
    "notes": ""
   },
   "Vikas Suda": {
@@ -242,11 +242,11 @@
      "on": true
     }
    ],
-   "updated": "2026-10-26 20:59:58.335000",
+   "updated": "2026-10-26 20:59:58.335000 r2",
    "notes": "Chipper"
   },
   "Rahul Sharma": {
-   "hcp": 11,
+   "hcp": 10,
    "tee": "Blue",
    "shape": "D",
    "curve": 2,
@@ -360,7 +360,7 @@
      "on": true
     }
    ],
-   "updated": "2026-10-26 21:01:06.204000",
+   "updated": "2026-10-26 21:01:06.204000 r2",
    "notes": "Driver and hybrid may push or slice, 4 and 5 iron goes a bit right sometimes when I try and hit it hard, my wedges go a bit right like 10 yds; Bunker game needs work"
   },
   "Nitin Sahjwani": {
@@ -478,7 +478,7 @@
      "on": true
     }
    ],
-   "updated": "2026-10-26 21:02:28.495000",
+   "updated": "2026-10-26 21:02:28.495000 r2",
    "notes": ""
   }
  }
