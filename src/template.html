@@ -339,6 +339,8 @@ const pct = (v) => (v < 0.005 && v > 0 ? '<1' : Math.round(v * 100)) + '%';
 const yd = (v) => Math.round(v);
 const card = (n) => SCORECARD.holes[n - 1];
 const cardYds = (n, teeKey) => card(n).y[TEE_KEYS.indexOf(teeKey)];
+// yardage the hole plays today: the mapped tee's own figure when it differs from the card (e.g. tees moved up)
+const teeYds = (n, teeKey) => (HOLES[n] && HOLES[n].mapped && HOLES[n].tees[teeKey] ? HOLES[n].tees[teeKey].card : cardYds(n, teeKey));
 const tee = () => H.tees[cur().tee];
 const pin = () => H.pins[S.pin];
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -387,13 +389,13 @@ function lineCarry(from, ang, lieCode, maxD) {
 function renderHeader() {
   const n = S.hole, c = card(n), p = cur(), st = strokesFor(p.hcp, c.si);
   $('#hn').textContent = n;
-  const facts = [[c.par, 'Par'], [c.si, 'Stroke index'], [cardYds(n, p.tee), `${p.tee} tee yds`]];
+  const facts = [[c.par, 'Par'], [c.si, 'Stroke index'], [teeYds(n, p.tee), `${p.tee} tee yds`]];
   if (H) facts.push([yd(dist(tee(), pin())), 'To this pin']);
   facts.push([c.par + st, 'Your net par']);
   $('#facts').innerHTML = facts.map(([b, s]) => `<div class="fact"><b>${b}</b><span>${s}</span></div>`).join('');
   $('#holeSel').innerHTML = SCORECARD.holes.map((h, i) => `<option value="${i + 1}" ${i + 1 === n ? 'selected' : ''}>${i + 1} · par ${h.par}${HOLES[i + 1] && HOLES[i + 1].mapped ? '' : ' (soon)'}</option>`).join('');
   $('#playerSel').innerHTML = S.players.map((q, i) => `<option value="${i}" ${i === S.cur ? 'selected' : ''}>${esc(q.name)} · ${q.hcp} hcp${q.reserve ? ' (reserve)' : ''}</option>`).join('');
-  $('#teeSeg').innerHTML = TEE_KEYS.map((k) => `<button aria-pressed="${k === p.tee}" data-tee="${k}">${k} ${cardYds(n, k)}</button>`).join('');
+  $('#teeSeg').innerHTML = TEE_KEYS.map((k) => `<button aria-pressed="${k === p.tee}" data-tee="${k}">${k} ${teeYds(n, k)}</button>`).join('');
   $('#pinSeg').innerHTML = PIN_KEYS.map((k) => `<button aria-pressed="${k === S.pin}" data-pin="${k}">${k}</button>`).join('');
   $('#objSeg').innerHTML = [['safe', 'Play to handicap safely'], ['score', 'Lowest average']].map(([k, v]) => `<button aria-pressed="${k === S.objective}" data-obj="${k}">${v}</button>`).join('');
 }
