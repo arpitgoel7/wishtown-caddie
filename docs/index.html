@@ -1685,9 +1685,13 @@ function shapeOf(p, c) {
   const dir = v[0] === 'D' ? -1 : v[0] === 'F' ? 1 : 0, size = dir ? +(v[1] || 2) : 0;
   return { dir, size };
 }
+// Owner's choice (Oct 2026): every player's ball-flight scatter is modelled as if their handicap were 2 higher
+// (a 2 spreads like a 4). Entered side misses (± yds / % on target) are used as typed.
+const DISP_HCP_ADD = 2;
 function makePlayer(p) {
   const h = Math.max(-5, Math.min(40, +p.hcp || 0));
   const hp = Math.max(0, h);
+  const hd = hp + DISP_HCP_ADD; // handicap used for ball-flight scatter (spread, mishits); short game and putting use hp
   const shots = [];
   for (const c of p.clubs) {
     if (!c.on || !(+c.carry > 0)) continue;
@@ -1704,11 +1708,11 @@ function makePlayer(p) {
     } else if (acc > 0) {
       sLat = acc * (1 + 0.08 * (3 - conf));
     } else {
-      sLat = carry * (0.05 + 0.0028 * hp) * cfSpread;
+      sLat = carry * (0.05 + 0.0028 * hd) * cfSpread;
     }
-    const sD = carry * (0.03 + 0.0022 * hp) * cfSpread;
+    const sD = carry * (0.03 + 0.0022 * hd) * cfSpread;
     const kMul = kind === 'driver' ? 1.3 : kind === 'wood' ? 1.15 : kind === 'hybrid' ? 1.0 : kind === 'wedge' ? 0.7 : 0.9;
-    const pm = Math.min(0.4, (0.012 + 0.0055 * hp) * kMul * cfMis);
+    const pm = Math.min(0.4, (0.012 + 0.0055 * hd) * kMul * cfMis);
     const sh = shapeOf(p, c);
     shots.push({ name: c.name, kind, type: 'full', carry, roll: (total - carry) * (1 - 0.08 * sh.dir), sLat, sD, pm, bias: 0, conf, skew: sh.dir, curve: sh.dir * carry * (SHAPE_CURVE[sh.size] || 0) });
   }
@@ -1716,11 +1720,11 @@ function makePlayer(p) {
   // partial pitches below the shortest full club
   const minC = shots.length ? shots[shots.length - 1].carry : 60;
   for (let c = 30; c <= minC - 8; c += 10) {
-    const f = 1 + hp / 25;
-    shots.push({ name: `${c}-yd pitch`, kind: 'pitch', type: 'pitch', carry: c, roll: 3, sLat: 0.06 * c * f, sD: 0.08 * c * f, pm: 0.02 + 0.004 * hp, bias: 0, conf: 3 });
+    const f = 1 + hd / 25;
+    shots.push({ name: `${c}-yd pitch`, kind: 'pitch', type: 'pitch', carry: c, roll: 3, sLat: 0.06 * c * f, sD: 0.08 * c * f, pm: 0.02 + 0.004 * hd, bias: 0, conf: 3 });
   }
   // recovery punches from trees
-  for (const c of [40, 70, 100]) shots.push({ name: `Punch out (${c} yds)`, kind: 'punch', type: 'punch', carry: c - 20, roll: 20, sLat: 8, sD: 10, pm: 0.05 + 0.003 * hp, bias: 0, conf: 3 });
+  for (const c of [40, 70, 100]) shots.push({ name: `Punch out (${c} yds)`, kind: 'punch', type: 'punch', carry: c - 20, roll: 20, sLat: 8, sD: 10, pm: 0.05 + 0.003 * hd, bias: 0, conf: 3 });
   return { h: hp, shots };
 }
 

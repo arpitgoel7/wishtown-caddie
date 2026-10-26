@@ -3,6 +3,8 @@
 All distances in yards. σ = one standard deviation. `h` = playing handicap (≥0). `conf` = club confidence 1–5 (3 neutral).
 
 ## 1. Ball pattern per club
+**Dispersion handicap (owner, Oct 2026):** in this section's spread and mishit formulas, `h` is the playing handicap **+ 2** (a 2 handicap spreads like a 4, a 10 like a 12). Side misses a player enters themselves are used as entered. Short game, putting (section 2) and strokes received use the real playing handicap.
+
 | Element | Rule |
 |---|---|
 | Carry | Normal(carry, σd), σd = carry × (3% + 0.22%·h) × (1 + 0.15·(3−conf)) |
