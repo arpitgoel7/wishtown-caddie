@@ -14,8 +14,10 @@ const TEAM = [ // from data/roster.json (playing handicaps)
   ['Nyra Singh', 2, 'Red'], ['Rahul Sharma', 10, 'Blue'], ['Nitin Sahjwani', 9, 'Blue'],
   ['Murli Mohan Malla', 9, 'Blue'], ['Naresh Rawat', 8, 'Blue'], ['Deepak Yadav', 7, 'Blue'],
 ];
-const CLUBS = ['Driver', '3 Wood', '5 Wood', '7 Wood', '3 Hybrid', '4 Hybrid', '5 Hybrid', '4 Iron', '5 Iron',
-  '6 Iron', '7 Iron', '8 Iron', '9 Iron', 'PW', 'GW', 'SW', 'LW'];
+const WOODS = ['Driver', '3 Wood', '4 Wood', '5 Wood', '7 Wood', '9 Wood', '2 Hybrid', '3 Hybrid', '4 Hybrid', '5 Hybrid', '6 Hybrid'];
+const IRONS = ['3 Iron', '4 Iron', '5 Iron', '6 Iron', '7 Iron', '8 Iron', '9 Iron', 'PW'];
+const WEDGES = ['46°', '48°', '50°', '52°', '54°', '56°', '58°', '60°', '62°', '64°'];
+const CLUBS = WOODS.concat(IRONS, WEDGES);
 const APP_URL = 'https://claude.ai/artifact/Qf7H6fiTVYjkjvjcrEqpMP';
 
 function createTeamForm() {
@@ -46,22 +48,30 @@ function createTeamForm() {
   form.addParagraphTextItem().setTitle('Any club that curves differently? (optional)')
     .setHelpText('e.g. "Driver fades, irons draw"');
 
-  // --- Distances ---
-  form.addPageBreakItem().setTitle('Your distances (yards)')
-    .setHelpText('For each club you carry type:  carry, total, side miss\n' +
-      'carry = where it lands, total = where it stops, side miss = how far left or right a normal shot ' +
-      'finishes from where you aimed. Example:  215, 235, 20\n' +
-      'Side miss is optional (215, 235 is fine). Leave clubs you don\'t carry blank.');
-  const pattern = '^\\s*\\d{2,3}\\s*[,/ ]\\s*\\d{2,3}(\\s*[,/ ]\\s*\\d{1,2})?\\s*$';
-  for (const c of CLUBS) {
-    form.addTextItem().setTitle(c).setValidation(FormApp.createTextValidation()
-      .setHelpText('carry, total, side miss — e.g. 150, 156, 12').requireTextMatchesPattern(pattern).build());
+  // --- Distances: one page each for woods & hybrids, irons, wedges ---
+  const how = 'For each club type:  carry, total, side miss  (e.g. 215, 235, 20)\n' +
+    'carry = where it lands, total = where it stops, side miss = how far left or right a normal shot finishes ' +
+    'from where you aimed (optional). Type NO for a club that is not in your bag.';
+  // "carry, total[, side miss]" or "no" / "na" / "-" / "x"
+  const pattern = '^\\s*([Nn][Oo]|[Nn]/?[Aa]|-|[Xx]|\\d{2,3}\\s*[,/ ]\\s*\\d{2,3}(\\s*[,/ ]\\s*\\d{1,2})?)\\s*$';
+  const pages = [['Woods & hybrids (yards)', WOODS, ''],
+    ['Irons (yards)', IRONS, ''],
+    ['Wedges by loft (yards)', WEDGES, 'If your wedge is marked GW, SW or LW, use its loft: gap ≈ 50–52°, sand ≈ 54–56°, lob ≈ 58–60°. ']];
+  for (const [title, list, extra] of pages) {
+    form.addPageBreakItem().setTitle(title).setHelpText(extra + how);
+    for (const c of list) {
+      form.addTextItem().setTitle(c).setValidation(FormApp.createTextValidation()
+        .setHelpText('carry, total, side miss (e.g. 150, 156, 12), or NO if not in your bag')
+        .requireTextMatchesPattern(pattern).build());
+    }
   }
+  form.addParagraphTextItem().setTitle('Any other club? (optional)')
+    .setHelpText('e.g. "1 Iron: 200, 215"  or  "Chipper: 40, 60"');
 
   // --- Confidence ---
   form.addPageBreakItem().setTitle('Confidence');
-  form.addCheckboxItem().setTitle('Clubs you trust under pressure').setChoiceValues(CLUBS);
-  form.addCheckboxItem().setTitle('Clubs you would rather avoid').setChoiceValues(CLUBS);
+  form.addCheckboxItem().setTitle('Clubs you trust under pressure').setHelpText('Only tick clubs in your bag.').setChoiceValues(CLUBS);
+  form.addCheckboxItem().setTitle('Clubs you would rather avoid').setHelpText('Only tick clubs in your bag.').setChoiceValues(CLUBS);
   form.addParagraphTextItem().setTitle('Anything else about your game? (optional)');
 
   // --- Responses sheet + personal links ---

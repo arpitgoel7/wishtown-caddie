@@ -30,6 +30,8 @@ Tour baselines (Broadie) plus handicap add-on:
 - Strokes received on a hole: floor(PH/18) + (PH mod 18 ≥ SI ? 1 : 0), PH = playing handicap; net par = par + strokes.
 - Outputs: avg score, P(net par or better), Stableford average (2 + net par − score, floor 0), blow-up risk, water %, landing mix, second shot (and a third on long holes), plus a round plan with the chosen tee club and aim on every mapped hole.
 
+Club type comes from the club name: Driver; woods (3W, 7 Wood); hybrids (4H, Rescue); wedges (PW, GW, AW, SW, LW, any name with "wedge", or a loft such as 52°, 56 deg, 60); everything else is an iron. (Fixed after Batch 3: PW, GW, SW and LW used to be read as woods, so they couldn't be played from bunkers and mishit slightly more often. Effect on the 18 hcp test: at most 0.06 strokes per hole.)
+
 ## 4. Known limits
 No wind, elevation, firmness, or flight-over-trees checks; water drop zones not modelled; short game personalised only through handicap. Calibration is estimated (18 hcp ≈ 4.6 on Hole 4 looks slightly optimistic) and should be checked against real team scores.
 

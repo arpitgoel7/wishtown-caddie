@@ -114,11 +114,12 @@ function invNorm(p) { // Acklam approximation
   return p < 0.5 ? x : -x;
 }
 function clubKind(name) {
-  const n = name.toLowerCase();
+  const n = name.toLowerCase().trim();
   if (n.startsWith('dr')) return 'driver';
+  // wedges first: "pw", "sw" etc. end in "w" like "3w"; lofts such as 52°, 56 deg or a bare 60 are wedges too
+  if (/^(pw|gw|aw|sw|lw)\b|wedge/.test(n) || /^\d{2}\s*(°|deg|$)/.test(n)) return 'wedge';
   if (/w(ood)?$|^\dw|wood/.test(n)) return 'wood';
   if (/h(ybrid)?$|^\dh|hybrid|rescue/.test(n)) return 'hybrid';
-  if (/^(pw|gw|aw|sw|lw)|wedge/.test(n)) return 'wedge';
   return 'iron';
 }
 // Shot shape (right-handed): stock shape per player, optional per-club override such as 'D2' (draw, medium).
