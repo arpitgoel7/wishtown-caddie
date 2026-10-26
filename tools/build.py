@@ -39,6 +39,14 @@ def main():
             .replace('{{IMGS}}', json.dumps(imgs)).replace('{{BAGS}}', json.dumps(bags, ensure_ascii=False)).replace('{{SCORECARD}}', json.dumps(sc)).replace('{{ROSTER}}', json.dumps(roster)))
     os.makedirs(f'{ROOT}/dist', exist_ok=True)
     open(f'{ROOT}/dist/index.html', 'w').write(out)
+    # Standalone copy for GitHub Pages (Settings → Pages → main, /docs): the artifact host wraps the page itself,
+    # a plain web host needs the full document around it.
+    site = ('<!doctype html>\n<html lang="en"><head><meta charset="utf-8">'
+            '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
+            '<meta name="description" content="Hole-by-hole strategy for the AAA Titans at Jaypee Greens Wish Town">'
+            '<style>body{margin:0}</style></head><body>\n' + out + '\n</body></html>\n')
+    open(f'{ROOT}/docs/index.html', 'w').write(site)
+    open(f'{ROOT}/docs/.nojekyll', 'w').write('')
     print(f'wrote dist/index.html ({len(out) / 1e6:.2f} MB), mapped holes: {sorted(imgs)}')
 
 if __name__ == '__main__':
