@@ -13,6 +13,7 @@ CLUBS = ['Driver', '3 Wood', '4 Wood', '5 Wood', '7 Wood', '9 Wood', '2 Hybrid',
          '46°', '48°', '50°', '52°', '54°', '56°', '58°', '60°', '62°', '64°']
 # per-club shape overrides read from the free-text answers (club -> 'D1'..'F3' or 'S')
 OVERRIDES = {
+    'Brig Pawan Bajaj': {'Driver': 'F1'},  # "Driver fades a little"
     'Rahul Sharma': {'Driver': 'F2', '3 Hybrid': 'F2', '4 Iron': 'F1', '5 Iron': 'F1', 'PW': 'F1', '50°': 'F1', '54°': 'F1', '58°': 'F1'},
 }
 
@@ -26,7 +27,7 @@ def roll_cap(club):
     c = club.lower()
     return 25 if c == 'driver' else 20 if 'wood' in c else 15 if 'hybrid' in c else 6 if c == 'pw' else 4 if c.endswith('°') else 8
 
-IGNORE_SIDE = {'Deepak Yadav', 'Nitin Sahjwani'}
+IGNORE_SIDE = {'Deepak Yadav', 'Nitin Sahjwani', 'Brig Pawan Bajaj'}
 
 def rows_from(path):
     if path.lower().endswith(('.csv', '.tsv', '.txt')):  # .tsv/.txt = rows copied straight out of the sheet

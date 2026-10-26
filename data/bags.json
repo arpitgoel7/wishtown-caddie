@@ -598,6 +598,106 @@
    ],
    "updated": "10/26/2026 22:13:46 r3",
    "notes": ""
+  },
+  "Brig Pawan Bajaj": {
+   "hcp": 14,
+   "tee": "Blue",
+   "shape": "S",
+   "curve": 2,
+   "clubs": [
+    {
+     "name": "Driver",
+     "carry": 235,
+     "total": 250,
+     "acc": "",
+     "conf": 4,
+     "shape": "F1",
+     "on": true
+    },
+    {
+     "name": "3 Wood",
+     "carry": 190,
+     "total": 220,
+     "acc": "",
+     "conf": 3,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "5 Wood",
+     "carry": 175,
+     "total": 190,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "5 Iron",
+     "carry": 160,
+     "total": 170,
+     "acc": "",
+     "conf": 2,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "6 Iron",
+     "carry": 150,
+     "total": 165,
+     "acc": "",
+     "conf": 3,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "7 Iron",
+     "carry": 135,
+     "total": 145,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "8 Iron",
+     "carry": 125,
+     "total": 135,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "9 Iron",
+     "carry": 115,
+     "total": 125,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "PW",
+     "carry": 105,
+     "total": 110,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "58°",
+     "carry": 60,
+     "total": 70,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    }
+   ],
+   "updated": "10/26/2026 22:55:14 r3",
+   "notes": "Driver fades a little"
   }
  }
 }
