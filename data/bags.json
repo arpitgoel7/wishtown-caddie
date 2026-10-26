@@ -10,7 +10,7 @@
      "name": "Driver",
      "carry": 225,
      "total": 235,
-     "acc": 7,
+     "acc": "",
      "conf": 4,
      "shape": "",
      "on": true
@@ -19,7 +19,7 @@
      "name": "3 Wood",
      "carry": 200,
      "total": 210,
-     "acc": 12,
+     "acc": "",
      "conf": 4,
      "shape": "",
      "on": true
@@ -28,7 +28,7 @@
      "name": "5 Wood",
      "carry": 190,
      "total": 205,
-     "acc": 5,
+     "acc": "",
      "conf": 4,
      "shape": "",
      "on": true
@@ -37,7 +37,7 @@
      "name": "3 Hybrid",
      "carry": 180,
      "total": 190,
-     "acc": 5,
+     "acc": "",
      "conf": 3,
      "shape": "",
      "on": true
@@ -46,7 +46,7 @@
      "name": "5 Hybrid",
      "carry": 175,
      "total": 185,
-     "acc": 5,
+     "acc": "",
      "conf": 3,
      "shape": "",
      "on": true
@@ -55,7 +55,7 @@
      "name": "5 Iron",
      "carry": 170,
      "total": 180,
-     "acc": 2,
+     "acc": "",
      "conf": 3,
      "shape": "",
      "on": true
@@ -64,7 +64,7 @@
      "name": "6 Iron",
      "carry": 160,
      "total": 170,
-     "acc": 5,
+     "acc": "",
      "conf": 4,
      "shape": "",
      "on": true
@@ -73,7 +73,7 @@
      "name": "7 Iron",
      "carry": 152,
      "total": 160,
-     "acc": 5,
+     "acc": "",
      "conf": 4,
      "shape": "",
      "on": true
@@ -82,7 +82,7 @@
      "name": "8 Iron",
      "carry": 145,
      "total": 150,
-     "acc": 4,
+     "acc": "",
      "conf": 4,
      "shape": "",
      "on": true
@@ -91,7 +91,7 @@
      "name": "9 Iron",
      "carry": 130,
      "total": 140,
-     "acc": 4,
+     "acc": "",
      "conf": 4,
      "shape": "",
      "on": true
@@ -100,7 +100,7 @@
      "name": "PW",
      "carry": 125,
      "total": 130,
-     "acc": 2,
+     "acc": "",
      "conf": 4,
      "shape": "",
      "on": true
@@ -109,7 +109,7 @@
      "name": "50°",
      "carry": 115,
      "total": 118,
-     "acc": 2,
+     "acc": "",
      "conf": 4,
      "shape": "",
      "on": true
@@ -118,7 +118,7 @@
      "name": "54°",
      "carry": 98,
      "total": 102,
-     "acc": 2,
+     "acc": "",
      "conf": 4,
      "shape": "",
      "on": true
@@ -373,7 +373,7 @@
      "name": "Driver",
      "carry": 260,
      "total": 270,
-     "acc": 5,
+     "acc": "",
      "conf": 3,
      "shape": "",
      "on": true
@@ -382,7 +382,7 @@
      "name": "3 Wood",
      "carry": 230,
      "total": 240,
-     "acc": 5,
+     "acc": "",
      "conf": 4,
      "shape": "",
      "on": true
@@ -391,7 +391,7 @@
      "name": "5 Wood",
      "carry": 225,
      "total": 240,
-     "acc": 5,
+     "acc": "",
      "conf": 4,
      "shape": "",
      "on": true
@@ -400,7 +400,7 @@
      "name": "3 Hybrid",
      "carry": 215,
      "total": 225,
-     "acc": 5,
+     "acc": "",
      "conf": 4,
      "shape": "",
      "on": true
@@ -409,7 +409,7 @@
      "name": "5 Iron",
      "carry": 190,
      "total": 200,
-     "acc": 5,
+     "acc": "",
      "conf": 4,
      "shape": "",
      "on": true
@@ -418,7 +418,7 @@
      "name": "6 Iron",
      "carry": 175,
      "total": 185,
-     "acc": 5,
+     "acc": "",
      "conf": 3,
      "shape": "",
      "on": true
@@ -427,7 +427,7 @@
      "name": "7 Iron",
      "carry": 165,
      "total": 170,
-     "acc": 5,
+     "acc": "",
      "conf": 4,
      "shape": "",
      "on": true
@@ -436,7 +436,7 @@
      "name": "8 Iron",
      "carry": 155,
      "total": 160,
-     "acc": 5,
+     "acc": "",
      "conf": 3,
      "shape": "",
      "on": true
@@ -445,7 +445,7 @@
      "name": "9 Iron",
      "carry": 145,
      "total": 150,
-     "acc": 5,
+     "acc": "",
      "conf": 3,
      "shape": "",
      "on": true
@@ -454,7 +454,7 @@
      "name": "PW",
      "carry": 135,
      "total": 140,
-     "acc": 2,
+     "acc": "",
      "conf": 3,
      "shape": "",
      "on": true

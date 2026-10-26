@@ -16,6 +16,10 @@ OVERRIDES = {
     'Rahul Sharma': {'Driver': 'F2', '3 Hybrid': 'F2', '4 Iron': 'F1', '5 Iron': 'F1', 'PW': 'F1', '50°': 'F1', '54°': 'F1', '58°': 'F1'},
 }
 
+# players whose third number was a distance spread (+/- yds), not a left/right miss: side miss is left blank so the
+# app estimates it from the handicap (owner, Oct 2026)
+IGNORE_SIDE = {'Deepak Yadav', 'Nitin Sahjwani'}
+
 def rows_from(path):
     if path.lower().endswith('.csv'):
         with open(path, newline='', encoding='utf-8') as f:
@@ -67,6 +71,7 @@ def main():
             if not nums: continue
             carry, total, side = nums
             conf = 4 if c in trust and c not in avoid else 2 if c in avoid and c not in trust else 3
+            if name in IGNORE_SIDE: side = 0
             clubs.append({'name': c, 'carry': carry, 'total': total, 'acc': side or '', 'conf': conf,
                           'shape': OVERRIDES.get(name, {}).get(c, ''), 'on': True})
         try: hcp = int(round(float(r.get('Playing handicap'))))
