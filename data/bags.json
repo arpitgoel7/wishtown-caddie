@@ -1,0 +1,485 @@
+{
+ "players": {
+  "Deepak Yadav": {
+   "hcp": 6,
+   "tee": "Blue",
+   "shape": "F",
+   "curve": 1,
+   "clubs": [
+    {
+     "name": "Driver",
+     "carry": 225,
+     "total": 235,
+     "acc": 7,
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "3 Wood",
+     "carry": 200,
+     "total": 210,
+     "acc": 12,
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "5 Wood",
+     "carry": 190,
+     "total": 205,
+     "acc": 5,
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "3 Hybrid",
+     "carry": 180,
+     "total": 190,
+     "acc": 5,
+     "conf": 3,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "5 Hybrid",
+     "carry": 175,
+     "total": 185,
+     "acc": 5,
+     "conf": 3,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "5 Iron",
+     "carry": 170,
+     "total": 180,
+     "acc": 2,
+     "conf": 3,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "6 Iron",
+     "carry": 160,
+     "total": 170,
+     "acc": 5,
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "7 Iron",
+     "carry": 152,
+     "total": 160,
+     "acc": 5,
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "8 Iron",
+     "carry": 145,
+     "total": 150,
+     "acc": 4,
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "9 Iron",
+     "carry": 130,
+     "total": 140,
+     "acc": 4,
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "PW",
+     "carry": 125,
+     "total": 130,
+     "acc": 2,
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "50°",
+     "carry": 115,
+     "total": 118,
+     "acc": 2,
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "54°",
+     "carry": 98,
+     "total": 102,
+     "acc": 2,
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "60°",
+     "carry": 78,
+     "total": 85,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    }
+   ],
+   "updated": "2026-10-26 20:55:24.693000",
+   "notes": ""
+  },
+  "Vikas Suda": {
+   "hcp": 18,
+   "tee": "Blue",
+   "shape": "F",
+   "curve": 1,
+   "clubs": [
+    {
+     "name": "Driver",
+     "carry": 220,
+     "total": 230,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "3 Wood",
+     "carry": 180,
+     "total": 190,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "7 Wood",
+     "carry": 170,
+     "total": 180,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "3 Iron",
+     "carry": 170,
+     "total": 180,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "5 Iron",
+     "carry": 160,
+     "total": 170,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "6 Iron",
+     "carry": 140,
+     "total": 155,
+     "acc": "",
+     "conf": 2,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "7 Iron",
+     "carry": 130,
+     "total": 140,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "8 Iron",
+     "carry": 120,
+     "total": 130,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "9 Iron",
+     "carry": 100,
+     "total": 115,
+     "acc": "",
+     "conf": 3,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "PW",
+     "carry": 90,
+     "total": 100,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "56°",
+     "carry": 60,
+     "total": 70,
+     "acc": "",
+     "conf": 2,
+     "shape": "",
+     "on": true
+    }
+   ],
+   "updated": "2026-10-26 20:59:58.335000",
+   "notes": "Chipper"
+  },
+  "Rahul Sharma": {
+   "hcp": 11,
+   "tee": "Blue",
+   "shape": "D",
+   "curve": 2,
+   "clubs": [
+    {
+     "name": "Driver",
+     "carry": 270,
+     "total": 280,
+     "acc": 25,
+     "conf": 2,
+     "shape": "F2",
+     "on": true
+    },
+    {
+     "name": "3 Hybrid",
+     "carry": 240,
+     "total": 250,
+     "acc": 25,
+     "conf": 4,
+     "shape": "F2",
+     "on": true
+    },
+    {
+     "name": "4 Iron",
+     "carry": 220,
+     "total": 225,
+     "acc": 25,
+     "conf": 2,
+     "shape": "F1",
+     "on": true
+    },
+    {
+     "name": "5 Iron",
+     "carry": 200,
+     "total": 210,
+     "acc": 15,
+     "conf": 2,
+     "shape": "F1",
+     "on": true
+    },
+    {
+     "name": "6 Iron",
+     "carry": 190,
+     "total": 200,
+     "acc": 10,
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "7 Iron",
+     "carry": 180,
+     "total": 190,
+     "acc": 10,
+     "conf": 3,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "8 Iron",
+     "carry": 158,
+     "total": 165,
+     "acc": 8,
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "9 Iron",
+     "carry": 150,
+     "total": 155,
+     "acc": 10,
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "PW",
+     "carry": 138,
+     "total": 145,
+     "acc": 5,
+     "conf": 4,
+     "shape": "F1",
+     "on": true
+    },
+    {
+     "name": "50°",
+     "carry": 118,
+     "total": 125,
+     "acc": 10,
+     "conf": 3,
+     "shape": "F1",
+     "on": true
+    },
+    {
+     "name": "54°",
+     "carry": 110,
+     "total": 115,
+     "acc": 10,
+     "conf": 4,
+     "shape": "F1",
+     "on": true
+    },
+    {
+     "name": "58°",
+     "carry": 90,
+     "total": 105,
+     "acc": 10,
+     "conf": 2,
+     "shape": "F1",
+     "on": true
+    }
+   ],
+   "updated": "2026-10-26 21:01:06.204000",
+   "notes": "Driver and hybrid may push or slice, 4 and 5 iron goes a bit right sometimes when I try and hit it hard, my wedges go a bit right like 10 yds; Bunker game needs work"
+  },
+  "Nitin Sahjwani": {
+   "hcp": 9,
+   "tee": "Blue",
+   "shape": "D",
+   "curve": 1,
+   "clubs": [
+    {
+     "name": "Driver",
+     "carry": 260,
+     "total": 270,
+     "acc": 5,
+     "conf": 3,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "3 Wood",
+     "carry": 230,
+     "total": 240,
+     "acc": 5,
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "5 Wood",
+     "carry": 225,
+     "total": 240,
+     "acc": 5,
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "3 Hybrid",
+     "carry": 215,
+     "total": 225,
+     "acc": 5,
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "5 Iron",
+     "carry": 190,
+     "total": 200,
+     "acc": 5,
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "6 Iron",
+     "carry": 175,
+     "total": 185,
+     "acc": 5,
+     "conf": 3,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "7 Iron",
+     "carry": 165,
+     "total": 170,
+     "acc": 5,
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "8 Iron",
+     "carry": 155,
+     "total": 160,
+     "acc": 5,
+     "conf": 3,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "9 Iron",
+     "carry": 145,
+     "total": 150,
+     "acc": 5,
+     "conf": 3,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "PW",
+     "carry": 135,
+     "total": 140,
+     "acc": 2,
+     "conf": 3,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "50°",
+     "carry": 100,
+     "total": 105,
+     "acc": "",
+     "conf": 3,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "54°",
+     "carry": 90,
+     "total": 95,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    }
+   ],
+   "updated": "2026-10-26 21:02:28.495000",
+   "notes": ""
+  }
+ }
+}

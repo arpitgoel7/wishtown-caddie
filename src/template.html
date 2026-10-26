@@ -44,8 +44,12 @@ h1 .hn { color: var(--accent); }
 @media (max-width: 820px) { .main { grid-template-columns: minmax(0, 1fr); } }
 .mapcard { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 10px; display: grid; gap: 8px; }
 @media (max-width: 820px) { .mapcard { position: static; } }
-.mapbox { display: flex; justify-content: center; }
-#map { width: 100%; height: auto; max-height: 78vh; aspect-ratio: 1 / 2; border-radius: 6px; background: #22301f; display: block; }
+/* The map sits in a frame sized from its width (padding-top = height/width), so it renders the same in every browser,
+   including iOS Safari, which ignores aspect-ratio on an SVG sized with width: auto. */
+.mapbox { display: block; }
+.mapframe { position: relative; width: min(100%, calc(78vh * var(--ar, 0.5))); margin: 0 auto; }
+.mapframe::before { content: ""; display: block; padding-top: var(--pt, 200%); }
+#map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 6px; background: #22301f; display: block; }
 .soon { display: grid; place-items: center; text-align: center; gap: 6px; min-height: 320px; border-radius: 6px; background: var(--soft); color: var(--muted); padding: 24px; }
 .soon b { font-family: var(--display); font-size: 28px; color: var(--ink); }
 .holepick { display: inline-flex; align-items: center; gap: 4px; }
@@ -53,7 +57,7 @@ h1 .hn { color: var(--accent); }
 .holepick select { font-weight: 600; }
 td.soonc { color: var(--muted); text-align: left; }
 .prog { font-size: 13px; color: var(--muted); }
-@media (max-width: 820px) { #map { max-height: 70vh; width: auto; max-width: 100%; } }
+@media (max-width: 820px) { .mapframe { width: min(100%, calc(70vh * var(--ar, 0.5))); } }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; color: var(--muted); }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
 .credit { font-size: 11px; color: var(--muted); }
@@ -153,7 +157,7 @@ input[type="number"] { font-variant-numeric: tabular-nums; }
 
   <div class="main">
     <section class="mapcard" aria-label="Hole map">
-      <div class="mapbox"><svg id="map" viewBox="-95 -360 190 380" role="img" aria-label="Satellite map of the hole with hazards and the recommended route"></svg><div class="soon" id="mapSoon" hidden></div></div>
+      <div class="mapbox"><div class="mapframe" id="mapFrame"><svg id="map" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-95 -360 190 380" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Satellite map of the hole with hazards and the recommended route"></svg></div><div class="soon" id="mapSoon" hidden></div></div>
       <div class="legend">
         <span><i style="background:var(--plan)"></i>Your route</span>
         <span><i style="background:#fff"></i>Shot pattern</span>
@@ -276,6 +280,7 @@ self.onmessage = (e) => { try { self.postMessage({ id: e.data.id, res: compute(e
 const IMGS = {{IMGS}};
 const SCORECARD = {{SCORECARD}};
 const ROSTER = {{ROSTER}};
+const TEAM_BAGS = {{BAGS}}.players || {}; // from the bag form (tools/import_bags.py), keyed by roster name
 const MAPPED = Object.keys(HOLES).map(Number).filter((n) => HOLES[n].mapped).sort((a, b) => a - b);
 const TEE_KEYS = ['Black', 'Blue', 'White', 'Red'];
 const PIN_KEYS = ['Front', 'Middle', 'Back'];
@@ -309,6 +314,18 @@ function load() {
   return s;
 }
 let S = load();
+// Bags from the team form replace sample numbers, and a newer form answer replaces an older one,
+// but never a bag the player has edited on this phone (p.fromForm is cleared on any edit).
+function applyTeamBags() {
+  for (const p of S.players) {
+    const b = TEAM_BAGS[p.name];
+    if (!b || !(p.sample || (p.fromForm && p.fromForm !== b.updated))) continue;
+    Object.assign(p, { clubs: b.clubs.map((c) => Object.assign({}, c)), shape: b.shape, curve: b.curve, sample: false, fromForm: b.updated });
+    if (b.hcp != null) p.hcp = b.hcp;
+    if (b.tee) p.tee = b.tee;
+  }
+}
+applyTeamBags();
 if (!HOLES[S.hole] && !SCORECARD.holes[S.hole - 1]) S.hole = MAPPED[0] || 1;
 function save() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) { } }
 const cur = () => S.players[Math.min(S.cur, S.players.length - 1)];
@@ -477,6 +494,7 @@ function renderPlan() {
   const sh = sec ? sec.shares : {};
   const share = (k) => sh[k] || 0;
   let html = H.disclaimer ? `<div class="banner warn"><span><b>Note:</b> ${esc(H.disclaimer)}</span></div>` : '';
+  if (p.fromForm) html += `<p class="note">Using the bag ${esc(p.name.split(' ')[0])} sent in the team form. Change anything in My bag; your edits stay on this phone.</p>`;
   if (p.sample) html += `<div class="banner"><span>These are <b>sample numbers</b> for a ${p.hcp}-handicap ${p.gender === 'F' ? 'lady golfer' : 'golfer'}. Enter your own distances, accuracy and shot shape to get your real plan.</span><button class="btn small" data-go="bag">Enter my bag</button></div>`;
   html += `<div class="kpis">
     <div class="kpi"><b>${row.mean.toFixed(2)}</b><span>Average score on this hole</span></div>
@@ -626,7 +644,7 @@ $('#panel-bag').addEventListener('input', (e) => {
     else if (k === 'acc') c.acc = t.value === '' ? '' : +t.value;
     else c[k] = +t.value;
   } else return;
-  p.sample = false; save();
+  p.sample = false; p.fromForm = null; save();
 });
 $('#panel-bag').addEventListener('change', (e) => {
   const p = cur(), t = e.target;
@@ -635,12 +653,12 @@ $('#panel-bag').addEventListener('change', (e) => {
   else if (t.id === 'f-curve') p.curve = +t.value;
   else if (t.id === 'f-acc') { p.accMode = t.value; p.clubs.forEach((c) => (c.acc = '')); renderBag(); }
   else return;
-  p.sample = false; save(); renderHeader();
+  p.sample = false; p.fromForm = null; save(); renderHeader();
 });
 $('#panel-bag').addEventListener('click', (e) => {
   const p = cur(), id = e.target.id;
   if (id === 'addClub') { p.clubs.push({ name: 'New club', carry: 100, total: 105, acc: '', conf: 3, shape: '', on: true }); renderBag(); }
-  else if (id === 'resetBag') { p.clubs = sampleBag(p.hcp, p.gender); renderBag(); }
+  else if (id === 'resetBag') { p.clubs = sampleBag(p.hcp, p.gender); p.fromForm = null; renderBag(); }
   else if (id === 'buildPlan') { S.tab = 'plan'; save(); showTab(); refreshAll(); }
   else if (id === 'addPlayer') { S.players.push(newPlayer('New player', 'M', 18, false)); S.cur = S.players.length - 1; confirmDel = false; refreshAll(); }
   else if (id === 'delPlayer') { confirmDel = true; renderBag(); }
@@ -706,21 +724,22 @@ $('#panel-card').addEventListener('click', (e) => { const tr = e.target.closest(
 function poly(pts) { return pts.map(([x, y]) => `${x},${-y}`).join(' '); }
 function centroid(pts) { return [pts.reduce((a, p) => a + p[0], 0) / pts.length, pts.reduce((a, p) => a + p[1], 0) / pts.length]; }
 function drawMap() {
-  const map = $('#map'), soon = $('#mapSoon');
+  const map = $('#map'), soon = $('#mapSoon'), frame = $('#mapFrame');
   if (!H) {
     const c = card(S.hole);
-    map.hidden = true; soon.hidden = false;
+    frame.hidden = true; soon.hidden = false;
     soon.innerHTML = `<b>Hole ${S.hole}</b><span>Par ${c.par} · SI ${c.si} · ${cardYds(S.hole, cur().tee)} yds from the ${cur().tee} tee</span><span>Map coming soon</span>`;
     return;
   }
-  map.hidden = false; soon.hidden = true;
+  frame.hidden = false; soon.hidden = true;
   const t = tee(), pn = pin(), v = H.view, W = v.x1 - v.x0, Hh = v.y1 - v.y0, u = Math.max(1, Hh / 380);
-  map.setAttribute('viewBox', `${v.x0} ${-v.y1} ${W} ${Hh}`); map.style.aspectRatio = `${W} / ${Hh}`;
+  map.setAttribute('viewBox', `${v.x0} ${-v.y1} ${W} ${Hh}`);
+  frame.style.setProperty('--ar', (W / Hh).toFixed(4)); frame.style.setProperty('--pt', ((Hh / W) * 100).toFixed(3) + '%');
   map.setAttribute('aria-label', `Satellite map of hole ${S.hole} with hazards and the recommended route`);
   const box = `x="${v.x0}" y="${-v.y1}" width="${W}" height="${Hh}"`;
   const of = (k) => H.hazards.filter((h) => h.kind === k);
   let s = `<defs><clipPath id="clip"><rect ${box} rx="2"/></clipPath></defs><g clip-path="url(#clip)">
-   <image href="${IMGS[S.hole]}" ${box} preserveAspectRatio="none"/>
+   <image href="${IMGS[S.hole]}" xlink:href="${IMGS[S.hole]}" ${box} preserveAspectRatio="none"/>
    <polygon points="${poly(H.fairway)}" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.55)" stroke-width="${0.5 * u}" stroke-dasharray="2 1.5"/>
    ${of('trees').map((h) => `<polygon points="${poly(h.poly)}" fill="rgba(10,40,15,.25)" stroke="#9bd39b" stroke-width="${0.45 * u}" stroke-dasharray="1 1"/>`).join('')}
    ${of('water').map((h) => `<polygon points="${poly(h.poly)}" fill="rgba(90,166,240,.25)" stroke="#5AA6F0" stroke-width="${0.7 * u}"/>`).join('')}

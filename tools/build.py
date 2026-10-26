@@ -33,9 +33,10 @@ def main():
     sc = {'holes': [{'par': h['menPar'], 'si': h['menHandicap'], 'y': [h['teeYardages'][i] for i in (0, 2, 4, 6)]} for h in crs['holes']]}
     roster = json.load(open(f'{ROOT}/data/roster.json'))
     roster = {'players': [{k: p[k] for k in ('name', 'playingHandicap', 'tee', 'reserve')} for p in roster['players']]}
+    bags = json.load(open(f'{ROOT}/data/bags.json')) if os.path.exists(f'{ROOT}/data/bags.json') else {'players': {}}
     t = open(f'{ROOT}/src/template.html').read()
     out = (t.replace('{{HOLES}}', holes_js).replace('{{ENGINE}}', open(f'{ROOT}/src/engine.js').read())
-            .replace('{{IMGS}}', json.dumps(imgs)).replace('{{SCORECARD}}', json.dumps(sc)).replace('{{ROSTER}}', json.dumps(roster)))
+            .replace('{{IMGS}}', json.dumps(imgs)).replace('{{BAGS}}', json.dumps(bags, ensure_ascii=False)).replace('{{SCORECARD}}', json.dumps(sc)).replace('{{ROSTER}}', json.dumps(roster)))
     os.makedirs(f'{ROOT}/dist', exist_ok=True)
     open(f'{ROOT}/dist/index.html', 'w').write(out)
     print(f'wrote dist/index.html ({len(out) / 1e6:.2f} MB), mapped holes: {sorted(imgs)}')
