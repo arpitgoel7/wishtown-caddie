@@ -2242,7 +2242,7 @@ function renderPlan() {
   const sh = sec ? sec.shares : {};
   const share = (k) => sh[k] || 0;
   let html = H.disclaimer ? `<div class="banner warn"><span><b>Note:</b> ${esc(H.disclaimer)}</span></div>` : '';
-  if (p.fromForm) html += `<p class="note">Using the bag ${esc(p.name.split(' ')[0])} sent in the team form. Change anything in My bag; your edits stay on this phone.</p>`;
+  if (p.fromForm) html += `<p class="note">Using the bag ${esc(p.name.replace(/^(Brig(adier)?|Col|Maj|Capt|Dr|Mr|Mrs|Ms)\.?\s+/i, '').split(' ')[0])} sent in the team form. Change anything in My bag; your edits stay on this phone.</p>`;
   if (p.sample) html += `<div class="banner"><span>These are <b>sample numbers</b> for a ${p.hcp}-handicap ${p.gender === 'F' ? 'lady golfer' : 'golfer'}. Enter your own distances, accuracy and shot shape to get your real plan.</span><button class="btn small" data-go="bag">Enter my bag</button></div>`;
   html += `<div class="kpis">
     <div class="kpi"><b>${row.mean.toFixed(2)}</b><span>Average score on this hole</span></div>
