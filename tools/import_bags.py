@@ -1,5 +1,5 @@
 """Turn the bag form's responses into data/bags.json, which tools/build.py bakes into the app.
-  python3 tools/import_bags.py <responses.xlsx | responses.csv>
+  python3 tools/import_bags.py <responses.xlsx | responses.csv | rows pasted from the sheet as .tsv>
 Each player's latest response wins. Names are matched to data/roster.json (case and spaces ignored).
 Notes:
 - Google Sheets turns "220, 230" into the number 220230; such numbers are split back into carry/total.
@@ -23,9 +23,10 @@ REV = ' r2'
 IGNORE_SIDE = {'Deepak Yadav', 'Nitin Sahjwani'}
 
 def rows_from(path):
-    if path.lower().endswith('.csv'):
+    if path.lower().endswith(('.csv', '.tsv', '.txt')):  # .tsv/.txt = rows copied straight out of the sheet
         with open(path, newline='', encoding='utf-8') as f:
-            return list(csv.DictReader(f))
+            rows = list(csv.DictReader(f, delimiter='\t' if not path.lower().endswith('.csv') else ','))
+        return [{(k or '').strip(): v for k, v in r.items()} for r in rows]
     import openpyxl
     ws = openpyxl.load_workbook(path, data_only=True)['Form Responses 1']
     it = ws.iter_rows(values_only=True)
