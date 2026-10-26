@@ -133,7 +133,7 @@
      "on": true
     }
    ],
-   "updated": "10/26/2026 20:55:25 r2",
+   "updated": "10/26/2026 20:55:25 r3",
    "notes": ""
   },
   "Vikas Suda": {
@@ -242,7 +242,7 @@
      "on": true
     }
    ],
-   "updated": "10/26/2026 20:59:58 r2",
+   "updated": "10/26/2026 20:59:58 r3",
    "notes": "Chipper"
   },
   "Rahul Sharma": {
@@ -360,7 +360,7 @@
      "on": true
     }
    ],
-   "updated": "10/26/2026 21:01:06 r2",
+   "updated": "10/26/2026 21:01:06 r3",
    "notes": "Driver and hybrid may push or slice, 4 and 5 iron goes a bit right sometimes when I try and hit it hard, my wedges go a bit right like 10 yds; Bunker game needs work"
   },
   "Nitin Sahjwani": {
@@ -478,7 +478,7 @@
      "on": true
     }
    ],
-   "updated": "10/26/2026 21:02:28 r2",
+   "updated": "10/26/2026 21:02:28 r3",
    "notes": ""
   },
   "Nyra Singh": {
@@ -490,7 +490,7 @@
     {
      "name": "Driver",
      "carry": 180,
-     "total": 220,
+     "total": 200,
      "acc": "",
      "conf": 3,
      "shape": "",
@@ -499,7 +499,7 @@
     {
      "name": "3 Wood",
      "carry": 160,
-     "total": 190,
+     "total": 175,
      "acc": "",
      "conf": 2,
      "shape": "",
@@ -508,7 +508,7 @@
     {
      "name": "4 Hybrid",
      "carry": 150,
-     "total": 180,
+     "total": 165,
      "acc": "",
      "conf": 4,
      "shape": "",
@@ -517,7 +517,7 @@
     {
      "name": "5 Iron",
      "carry": 140,
-     "total": 160,
+     "total": 148,
      "acc": "",
      "conf": 3,
      "shape": "",
@@ -526,7 +526,7 @@
     {
      "name": "6 Iron",
      "carry": 130,
-     "total": 150,
+     "total": 138,
      "acc": "",
      "conf": 4,
      "shape": "",
@@ -535,7 +535,7 @@
     {
      "name": "7 Iron",
      "carry": 120,
-     "total": 140,
+     "total": 128,
      "acc": "",
      "conf": 3,
      "shape": "",
@@ -544,7 +544,7 @@
     {
      "name": "8 Iron",
      "carry": 110,
-     "total": 130,
+     "total": 118,
      "acc": "",
      "conf": 3,
      "shape": "",
@@ -553,7 +553,7 @@
     {
      "name": "9 Iron",
      "carry": 100,
-     "total": 120,
+     "total": 108,
      "acc": "",
      "conf": 3,
      "shape": "",
@@ -562,7 +562,7 @@
     {
      "name": "PW",
      "carry": 90,
-     "total": 110,
+     "total": 96,
      "acc": "",
      "conf": 4,
      "shape": "",
@@ -571,7 +571,7 @@
     {
      "name": "52°",
      "carry": 80,
-     "total": 100,
+     "total": 84,
      "acc": "",
      "conf": 3,
      "shape": "",
@@ -580,7 +580,7 @@
     {
      "name": "54°",
      "carry": 70,
-     "total": 90,
+     "total": 74,
      "acc": "",
      "conf": 3,
      "shape": "",
@@ -589,14 +589,14 @@
     {
      "name": "58°",
      "carry": 55,
-     "total": 75,
+     "total": 59,
      "acc": "",
      "conf": 4,
      "shape": "",
      "on": true
     }
    ],
-   "updated": "10/26/2026 22:13:46 r2",
+   "updated": "10/26/2026 22:13:46 r3",
    "notes": ""
   }
  }

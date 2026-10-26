@@ -19,7 +19,13 @@ OVERRIDES = {
 # players whose third number was a distance spread (+/- yds), not a left/right miss: side miss is left blank so the
 # app estimates it from the handicap (owner, Oct 2026)
 # bump to make phones re-load unedited form bags after an import-rule change
-REV = ' r2'
+REV = ' r3'
+# players whose "total" is their longest, not a normal shot (owner): use half the reported roll, capped by club type
+TOTAL_IS_LONGEST = {'Nyra Singh'}
+def roll_cap(club):
+    c = club.lower()
+    return 25 if c == 'driver' else 20 if 'wood' in c else 15 if 'hybrid' in c else 6 if c == 'pw' else 4 if c.endswith('°') else 8
+
 IGNORE_SIDE = {'Deepak Yadav', 'Nitin Sahjwani'}
 
 def rows_from(path):
@@ -75,6 +81,7 @@ def main():
             carry, total, side = nums
             conf = 4 if c in trust and c not in avoid else 2 if c in avoid and c not in trust else 3
             if name in IGNORE_SIDE: side = 0
+            if name in TOTAL_IS_LONGEST: total = carry + min(roll_cap(c), round((total - carry) / 2))
             clubs.append({'name': c, 'carry': carry, 'total': total, 'acc': side or '', 'conf': conf,
                           'shape': OVERRIDES.get(name, {}).get(c, ''), 'on': True})
         # the roster's playing handicap is authoritative (owner); the form's value is only reported
