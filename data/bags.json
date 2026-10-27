@@ -698,6 +698,106 @@
    ],
    "updated": "10/26/2026 22:55:14 r3",
    "notes": "Driver fades a little"
+  },
+  "Anoop Singh": {
+   "hcp": 16,
+   "tee": "Red",
+   "shape": "S",
+   "curve": 2,
+   "clubs": [
+    {
+     "name": "Driver",
+     "carry": 170,
+     "total": 180,
+     "acc": "",
+     "conf": 3,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "3 Wood",
+     "carry": 150,
+     "total": 160,
+     "acc": "",
+     "conf": 2,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "4 Hybrid",
+     "carry": 130,
+     "total": 140,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "5 Hybrid",
+     "carry": 120,
+     "total": 130,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "6 Iron",
+     "carry": 120,
+     "total": 130,
+     "acc": "",
+     "conf": 3,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "7 Iron",
+     "carry": 110,
+     "total": 120,
+     "acc": "",
+     "conf": 3,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "8 Iron",
+     "carry": 110,
+     "total": 110,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "9 Iron",
+     "carry": 90,
+     "total": 100,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "PW",
+     "carry": 60,
+     "total": 70,
+     "acc": "",
+     "conf": 4,
+     "shape": "",
+     "on": true
+    },
+    {
+     "name": "60°",
+     "carry": 40,
+     "total": 45,
+     "acc": "",
+     "conf": 3,
+     "shape": "",
+     "on": true
+    }
+   ],
+   "updated": "10/27/2026 4:36:07 r3",
+   "notes": "3 wood"
   }
  }
 }
