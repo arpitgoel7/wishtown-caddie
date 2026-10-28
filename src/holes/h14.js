@@ -6,7 +6,7 @@ HOLES[14] = {
   view: {x0: -95, x1: 95, y0: -20, y1: 360},
   tees: {
     Black: {x: 0, y: 3, card: 288},
-    Blue: {x: 0, y: 6, card: 285},
+    Blue: {x: -30, y: 41, card: 252}, // the team's Blue tee plays from the White markers here (owner, Oct 2026); card Blue = 285 from {x: 0, y: 6}
     White: {x: -30, y: 41, card: 252},
     Red: {x: -30, y: 41, card: 252},
   },
@@ -23,5 +23,5 @@ HOLES[14] = {
     { kind: 'trees', poly: [[-47,40],[25,40],[20,90],[5,130],[3,150],[-2,205],[-20,205],[-24,150],[-40,135],[-47,100]], name: 'Trees between the tee and the fairway (40–205)', tip: 'The tee shot has to carry this block to reach the fairway on the left. Anything short or straight at the flag finishes in the trees.' },
     { kind: 'trees', poly: [[-75,135],[-95,135],[-95,330],[-55,330],[-55,270],[-62,240],[-75,170]], name: 'Trees and cart path, left', tip: 'Left of the fairway.' },
   ],
-  notes: 'Tee yardages follow the official card. A short par 4 that bends left: carry the trees and the corner of the pond to the fairway on the left, then a short approach over the front-right bunker. Out of bounds (construction and apartments) all down the right. The green and the White/Red tee are placed from the imagery, because OpenStreetMap and 18Birdies disagree with it here; the imagery may predate the new clubhouse works.',
+  notes: 'Blue plays from the White tee on this hole (252 yds; the card\'s Blue tee is 285). A short par 4 that bends left: carry the trees and the corner of the pond to the fairway on the left, then a short approach over the front-right bunker. Out of bounds (construction and apartments) all down the right. The green and the White/Red tee are placed from the imagery, because OpenStreetMap and 18Birdies disagree with it here; the imagery may predate the new clubhouse works.',
 };

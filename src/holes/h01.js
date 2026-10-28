@@ -8,7 +8,7 @@ HOLES[1] = {
   // (Blue ~287, Red ~252, with the lake by the green 230 yds from Blue) was dropped in favour of the card.
   tees: {
     Black: {x: 0, y: -4, card: 454},
-    Blue: {x: 1, y: 40, card: 410},
+    Blue: {x: 2, y: 138, card: 312}, // the team's Blue tee plays from the Red markers here (owner, Oct 2026); card Blue = 410 from {x: 1, y: 40}
     White: {x: -2, y: 82, card: 368},
     Red: {x: 2, y: 138, card: 312},
   },
@@ -27,5 +27,5 @@ HOLES[1] = {
     { kind: 'trees', poly: [[32,347],[80,347],[80,377],[32,377]], name: 'Trees around the other green, right', tip: 'Scattered trees right of the line at about 350–375; stay left of them on the approach.' },
     { kind: 'trees', poly: [[42,185],[95,185],[95,335],[70,330],[50,310],[45,260],[48,220]], name: 'Scattered trees, right', tip: 'Open enough to find a gap, but a fade that runs on is blocked from the green.' },
   ],
-  notes: 'Tee yardages follow the official card. Another hole\'s green sits in the corridor at about 345 (right of the line): if you land on it, take relief. The approach is played between the cart path on the left and the lake on the right.',
+  notes: 'Blue plays from the Red tee on this hole (312 yds; the card\'s Blue tee is 410). Another hole\'s green sits in the corridor at about 345 (right of the line): if you land on it, take relief. The approach is played between the cart path on the left and the lake on the right.',
 };
