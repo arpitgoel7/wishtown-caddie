@@ -142,7 +142,10 @@ input[type="number"] { font-variant-numeric: tabular-nums; }
 .setup .q select, .setup .q input { font-size: 16px; padding: 7px 8px; }
 .setup .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
 .setup .preview { width: 100%; font-size: 14px; }
-.setup .preview input { width: 5em; padding: 4px 6px; }
+.setup .preview input { width: 3.8em; padding: 4px 5px; }
+.setup .preview select { padding: 4px 3px; font-size: 14px; }
+.setup .preview th, .setup .preview td { padding: 5px 6px; }
+@media (max-width: 440px) { .setup .preview .acc { display: none; } }
 .setup .checks { display: grid; gap: 6px; }
 .setup .checks div { border-left: 3px solid var(--warn); padding: 4px 10px; background: color-mix(in srgb, var(--warn) 10%, transparent); font-size: 14px; }
 .setup .ok { border-left: 3px solid var(--good); padding: 4px 10px; font-size: 14px; }
@@ -214,7 +217,7 @@ input[type="number"] { font-variant-numeric: tabular-nums; }
         <div class="key"><span><i style="background:#F2C230"></i>Your route</span><span><i style="background:#fff;border:1px solid #ccc"></i>Fairway</span><span><i style="background:#E9F5C9"></i>Rough</span><span><i style="background:#FF9F43"></i>Trees</span><span><i style="background:#E8C77A"></i>Bunker</span><span><i style="background:#FF5A4E"></i>Water / OB</span><span><i style="background:#7CFC9A"></i>Green</span></div>
         White arcs are distances from your tee.</li>
       <li><b>Round plan</b> lists your tee club, aim, average and Stableford on all 18 holes, and the strokes you get on each. Tap a hole to open it.</li>
-      <li><b>Set up my bag</b> asks for three carry distances, the clubs you carry, your shot shape and how wide your drives go, and builds the rest. It is saved for your team, so you only do it once. Fine-tune any club later in <b>My bag</b>. Until then, the plan uses <b>sample numbers</b> for your handicap.</li>
+      <li><b>Set up my bag</b> asks for three carry distances, the clubs you carry, your shot shape, how wide your drives go and which clubs you trust or avoid, and builds the rest. It is saved for your team, so you only do it once. Fine-tune any club later in <b>My bag</b>. Until then, the plan uses <b>sample numbers</b> for your handicap.</li>
       <li><b>Hazards</b> lists every bunker, pond, tree line and OB with the distance to reach and to carry it from your tee. <b>Scorecard</b> has the card, ratings and your strokes per hole.</li>
     </ol>
     <p class="note">The plan is an estimate from satellite maps and a golf model, not a guarantee. Yardages follow the card except where a hole says otherwise. Always check the markers on the day.</p>
@@ -2614,7 +2617,8 @@ function openSetup(asNew) {
   const wedge = [...ticked].filter((n) => WEDGES.includes(n)).pop() || 'PW';
   SU = { name: fresh ? '' : p.name, hcp: h, tee: fresh ? 'Blue' : p.tee, shape: fresh ? 'S' : p.shape, curve: fresh ? 2 : p.curve, ticked,
     longC: by([...ticked].sort((a, b) => REF[b] - REF[a])[0]) || r5((g === 'F' ? 165 : 215) * f), c7: by('7 Iron') || r5((g === 'F' ? 105 : 140) * f),
-    wedge, wedgeC: by(wedge) || r5(REF[wedge] * (g === 'F' ? 0.75 : 1) * f), acc: '', edits: {}, asNew: !!asNew };
+    wedge, wedgeC: by(wedge) || r5(REF[wedge] * (g === 'F' ? 0.75 : 1) * f), acc: '', edits: {}, asNew: !!asNew,
+    conf: Object.fromEntries(!fresh && !p.sample ? p.clubs.filter((c) => c.on && REF[c.name] && +c.conf !== 3).map((c) => [c.name, +c.conf >= 4 ? 4 : 2]) : []) };
   renderSetup();
   $('#guide').hidden = true; $('#setup').hidden = false; $('#setup').scrollTop = 0;
 }
@@ -2635,7 +2639,7 @@ function suGenerate() {
     const carry = Math.max(20, Math.round(e.carry || at(REF[n])));
     const total = Math.round(e.total || carry * (1 + (ROLL[kind] || 0.03)));
     const acc = SU.acc ? Math.max(3, Math.round((+SU.acc * carry) / longC)) : '';
-    return { name: n, carry, total: Math.max(carry, total), acc, conf: 3, shape: '', on: true, edited: !!(e.carry || e.total) };
+    return { name: n, carry, total: Math.max(carry, total), acc, conf: SU.conf[n] || 3, shape: '', on: true, edited: !!(e.carry || e.total) };
   });
 }
 function suChecks(bag) {
@@ -2651,6 +2655,9 @@ function suChecks(bag) {
   const seven = bag.find((c) => c.name === '7 Iron');
   if (seven && bag[0].name !== '7 Iron') { const r = seven.carry / bag[0].carry; if (r < 0.5 || r > 0.8) w.push({ t: `Your 7 iron carries ${Math.round(r * 100)}% of your ${bag[0].name}; most golfers are 60–70%. Both are carry (where the ball lands).` }); }
   for (const c of bag) if (c.edited && c.total - c.carry > 0.15 * c.carry + 5) w.push({ t: `${c.name}: ${c.total - c.carry} yds of roll. Total should be where a normal shot stops, not your best ever.` });
+  const trusted = bag.filter((c) => c.conf === 4).length, avoided = bag.filter((c) => c.conf === 2).length;
+  if (bag.length >= 6 && trusted === bag.length) w.push({ t: 'Every club is marked Trust. Keep Trust for the few clubs you would pick when it matters; the rest are Normal.' });
+  if (bag.length >= 6 && avoided > bag.length / 2) w.push({ t: `${avoided} of ${bag.length} clubs are marked Avoid. Avoid is for the one or two clubs you would rather leave in the bag.` });
   if (SU.acc) {
     const est = Math.round(bag[0].carry * (0.05 + 0.0028 * (SU.hcp + 2)));
     if (+SU.acc < 0.55 * est) w.push({ t: `±${SU.acc} yds is very straight for a ${SU.hcp} handicap (most miss by about ±${est}). Pick the width that covers most of your drives, bad ones included.` });
@@ -2684,9 +2691,10 @@ function renderSetup() {
     <fieldset><legend>5. How wide do your drives go?</legend>
       <div class="q"><label for="su-acc">Most of my drives finish… (left or right of where I aimed)</label><select id="su-acc">${ACC_CHOICES.map(([v, l]) => `<option value="${v}" ${String(v) === String(SU.acc) ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
       <p class="note" style="margin:0">This is sideways, not distance. Not sure? Leave it on “use my handicap”.</p></fieldset>
-    <fieldset><legend>6. Your bag</legend><p class="note" style="margin:0">Built from your answers, with normal roll added. Change any number you know exactly.</p>
-      <div class="tablewrap"><table class="preview"><thead><tr><th>Club</th><th>Carry</th><th>Total</th><th>± yds</th></tr></thead><tbody>
-      ${bag.map((c) => `<tr><td>${esc(c.name)}</td><td><input type="number" inputmode="numeric" data-edit="carry" data-n="${esc(c.name)}" value="${c.carry}"></td><td><input type="number" inputmode="numeric" data-edit="total" data-n="${esc(c.name)}" value="${c.total}"></td><td>${c.acc === '' ? 'auto' : c.acc}</td></tr>`).join('')}
+    <fieldset><legend>6. Your bag and confidence</legend><p class="note" style="margin:0">Built from your answers, with normal roll added. Change any number you know exactly.
+      <b>Confidence:</b> mark <b>Trust</b> for the few clubs you would pick under pressure and <b>Avoid</b> for any you would rather not hit; leave the rest on Normal.</p>
+      <div class="tablewrap"><table class="preview"><thead><tr><th>Club</th><th>Carry</th><th>Total</th><th>Confidence</th><th class="acc">± yds</th></tr></thead><tbody>
+      ${bag.map((c) => `<tr><td>${esc(c.name)}</td><td><input type="number" inputmode="numeric" data-edit="carry" data-n="${esc(c.name)}" value="${c.carry}"></td><td><input type="number" inputmode="numeric" data-edit="total" data-n="${esc(c.name)}" value="${c.total}"></td><td><select data-conf="${esc(c.name)}" aria-label="${esc(c.name)} confidence">${[[4, 'Trust'], [3, 'Normal'], [2, 'Avoid']].map(([v, l]) => `<option value="${v}" ${c.conf === v ? 'selected' : ''}>${l}</option>`).join('')}</select></td><td class="acc">${c.acc === '' ? 'auto' : c.acc}</td></tr>`).join('')}
       </tbody></table></div></fieldset>
     <div class="checks">${checks.length ? checks.map((c) => `<div>${c.stop ? '<b>Needed:</b> ' : '<b>Check:</b> '}${esc(c.t)}</div>`).join('') : '<p class="ok">Looks consistent.</p>'}</div>
     <div class="actions"><button class="btn" id="su-save" type="submit" ${checks.some((c) => c.stop) ? 'disabled' : ''}>${TEAM.storeUrl ? 'Save & send to my team' : 'Save my bag'}</button><button class="btn ghost" id="su-cancel" type="button">Cancel</button><span class="note" id="su-msg"></span></div>`;
@@ -2705,6 +2713,7 @@ $('#setupForm').addEventListener('change', (e) => {
   else if (id === 'su-wedge') SU.wedge = t.value;
   else if (id === 'su-wc') SU.wedgeC = +t.value;
   else if (id === 'su-acc') SU.acc = t.value;
+  else if (t.dataset.conf) { if (+t.value === 3) delete SU.conf[t.dataset.conf]; else SU.conf[t.dataset.conf] = +t.value; }
   else if (t.dataset.club) { if (t.checked) SU.ticked.add(t.dataset.club); else SU.ticked.delete(t.dataset.club); }
   else if (t.dataset.edit) { const n = t.dataset.n; SU.edits[n] = Object.assign(SU.edits[n] || {}, { [t.dataset.edit]: Math.max(0, Math.round(+t.value || 0)) }); }
   else return;
