@@ -1764,6 +1764,10 @@ const S_GOOD = normals(24, 7), S_MIS = normals(6, 11), S_TEE_GOOD = normals(400,
 // ---- Shot physics ----
 // returns {x,y,lie,pen,ob,water,wx,wy} — pen = penalty strokes (water); ob = true means stroke-and-distance.
 // Pass `o` to reuse one result object (the DP inner loop does, to spare the garbage collector).
+// Owner's choice (Nov 2026): fairway woods and hybrids are harder off the turf than off a tee. Any shot that is
+// not a tee shot gets a higher mishit chance and a wider spread (both directions) with these clubs.
+const TURF = { wood: { pm: 1.6, spread: 1.15 }, hybrid: { pm: 1.3, spread: 1.08 } };
+function pmAt(s, lie) { const t = lie !== 'tee' && TURF[s.kind]; return t ? Math.min(0.5, s.pm * t.pm) : s.pm; }
 const TRIG = { a: NaN, s: 0, c: 1 };
 function res(o, ob, x, y, lie, pen, water, wx, wy) { o.ob = ob; o.x = x; o.y = y; o.lie = lie; o.pen = pen; o.water = water; o.wx = wx; o.wy = wy; return o; }
 function shoot(H, x, y, lie, s, ang, z, mis, o) {
@@ -1771,6 +1775,7 @@ function shoot(H, x, y, lie, s, ang, z, mis, o) {
   let carry = s.carry, roll = s.roll, sLat = s.sLat, sD = s.sD;
   if (lie === LIE.R && s.type === 'full') { carry *= 0.93; sLat *= 1.15; sD *= 1.25; }
   if (lie === LIE.S && s.type !== 'punch') { carry *= 0.85; sLat *= 1.3; sD *= 1.3; }
+  if (lie !== 'tee' && TURF[s.kind]) { sLat *= TURF[s.kind].spread; sD *= TURF[s.kind].spread; }
   let c, lat;
   const zl = s.skew ? s.skew * (z.length > 3 ? z[3] : skewUnit(z[0])) : z[0]; // shaped shots: lopsided miss
   if (mis) { c = carry * (0.35 + 0.4 * z[2]); lat = s.bias + zl * sLat * 1.6; roll = roll * 0.8 + 8; }
@@ -1878,7 +1883,8 @@ function evalAction(ctx, s, x, y, lie, ang, good, mis, selfV) {
   const o = SCRATCH, r = ctx.risk || 0;
   for (let k = 0; k < good.length; k++) { shoot(ctx.H, x, y, lie, s, ang, good[k], false, o); eg += o.ob ? 1 + selfV : o.pen + valueAt(ctx, o.x, o.y, o.lie) + (o.lie === LIE.S || o.lie === LIE.T ? r : 0); }
   for (let k = 0; k < mis.length; k++) { shoot(ctx.H, x, y, lie, s, ang, mis[k], true, o); em += o.ob ? 1 + selfV : o.pen + valueAt(ctx, o.x, o.y, o.lie) + (o.lie === LIE.S || o.lie === LIE.T ? r : 0); }
-  return 1 + (1 - s.pm) * (eg / good.length) + s.pm * (em / mis.length);
+  const pm = pmAt(s, lie);
+  return 1 + (1 - pm) * (eg / good.length) + pm * (em / mis.length);
 }
 
 const SWEEP2_CLUBS = 4;
@@ -1951,7 +1957,7 @@ function playouts(sol, tee, opt, n, seed) {
     let x = tee.x, y = tee.y, lie = 'tee', strokes = 0, wet = false, guard = 0;
     let s = opt.shot, ang = opt.ang;
     while (guard++ < 12) {
-      const o = shoot(sol.H, x, y, lie, s, ang, nrm(), rnd() < s.pm);
+      const o = shoot(sol.H, x, y, lie, s, ang, nrm(), rnd() < pmAt(s, lie));
       strokes += 1;
       if (o.ob) { strokes += 1; } // replay from same spot
       else {
@@ -1972,7 +1978,7 @@ function playouts(sol, tee, opt, n, seed) {
   return { scores, water: waterCount[0] / n, firstLand };
 }
 
-if (typeof module !== 'undefined') module.exports = { skewUnit, SAFE_RISK, overCost, LIE, LIE_NAME, prepareHole, shapeOf, buildRaster, lieAt, makePlayer, solve, teeOptions, playouts, policyAt, puttE, sgE, valueAt, shoot };
+if (typeof module !== 'undefined') module.exports = { pmAt, TURF, skewUnit, SAFE_RISK, overCost, LIE, LIE_NAME, prepareHole, shapeOf, buildRaster, lieAt, makePlayer, solve, teeOptions, playouts, policyAt, puttE, sgE, valueAt, shoot };
 </script>
 <script id="worker-src" type="text/plain">
 function rngNormals(seed) {
@@ -2028,7 +2034,7 @@ function secondShot(sol, H, r) {
   const ang = Math.atan2(sol.pin.x - mx, sol.pin.y - my) + (pa.a * Math.PI) / 180;
   const nz = rngNormals(77), rnd = mulberry32(78), dots = []; let g = 0, sand = 0, wet = 0;
   for (let k = 0; k < 220; k++) {
-    const o = shoot(H, mx, my, lie, s, ang, nz(), rnd() < s.pm);
+    const o = shoot(H, mx, my, lie, s, ang, nz(), rnd() < pmAt(s, lie));
     if (o.ob) continue;
     const p = o.water ? { x: o.wx, y: o.wy, lie: LIE.W } : { x: o.x, y: o.y, lie: o.lie };
     if (p.lie === LIE.G) g++; if (p.lie === LIE.S) sand++; if (p.lie === LIE.W) wet++;

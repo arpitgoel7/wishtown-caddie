@@ -284,7 +284,7 @@ function secondShot(sol, H, r) {
   const ang = Math.atan2(sol.pin.x - mx, sol.pin.y - my) + (pa.a * Math.PI) / 180;
   const nz = rngNormals(77), rnd = mulberry32(78), dots = []; let g = 0, sand = 0, wet = 0;
   for (let k = 0; k < 220; k++) {
-    const o = shoot(H, mx, my, lie, s, ang, nz(), rnd() < s.pm);
+    const o = shoot(H, mx, my, lie, s, ang, nz(), rnd() < pmAt(s, lie));
     if (o.ob) continue;
     const p = o.water ? { x: o.wx, y: o.wy, lie: LIE.W } : { x: o.x, y: o.y, lie: o.lie };
     if (p.lie === LIE.G) g++; if (p.lie === LIE.S) sand++; if (p.lie === LIE.W) wet++;
