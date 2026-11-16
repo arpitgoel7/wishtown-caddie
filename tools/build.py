@@ -1,5 +1,5 @@
 """Build the Wish Town Caddie page -> dist/index.html (single self-contained file).
-Embeds every src/holes/hNN*.js, the engine, the roster, the scorecard and one satellite crop per mapped hole."""
+Embeds every src/holes/hNN*.js, the engine, the team config (data/team.json), the scorecard and one satellite crop per mapped hole."""
 import base64, glob, io, json, os, re, sys
 sys.path.insert(0, os.path.dirname(__file__))
 from geo import ROOT, course, crop, frame
@@ -31,19 +31,19 @@ def main():
         n = int(os.path.basename(f)[1:3]); m = hole_meta(open(f).read())
         if m['mapped']: imgs[n] = hole_image(n, m)
     sc = {'holes': [{'par': h['menPar'], 'si': h['menHandicap'], 'y': [h['teeYardages'][i] for i in (0, 2, 4, 6)]} for h in crs['holes']]}
-    roster = json.load(open(f'{ROOT}/data/roster.json'))
-    roster = {'players': [{k: p[k] for k in ('name', 'playingHandicap', 'tee', 'reserve')} for p in roster['players']]}
-    bags = json.load(open(f'{ROOT}/data/bags.json')) if os.path.exists(f'{ROOT}/data/bags.json') else {'players': {}}
+    team = json.load(open(f'{ROOT}/data/team.json'))
+    team = {'name': team.get('name', ''), 'storeUrl': team.get('storeUrl', ''),
+            'players': [{k: p[k] for k in ('name', 'playingHandicap', 'tee')} for p in team.get('players', [])]}
     t = open(f'{ROOT}/src/template.html').read()
     out = (t.replace('{{HOLES}}', holes_js).replace('{{ENGINE}}', open(f'{ROOT}/src/engine.js').read())
-            .replace('{{IMGS}}', json.dumps(imgs)).replace('{{BAGS}}', json.dumps(bags, ensure_ascii=False)).replace('{{SCORECARD}}', json.dumps(sc)).replace('{{ROSTER}}', json.dumps(roster)))
+            .replace('{{IMGS}}', json.dumps(imgs)).replace('{{SCORECARD}}', json.dumps(sc)).replace('{{TEAM}}', json.dumps(team, ensure_ascii=False)))
     os.makedirs(f'{ROOT}/dist', exist_ok=True)
     open(f'{ROOT}/dist/index.html', 'w').write(out)
     # Standalone copy for GitHub Pages (Settings → Pages → main, /docs): the artifact host wraps the page itself,
     # a plain web host needs the full document around it.
     site = ('<!doctype html>\n<html lang="en"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
-            '<meta name="description" content="Hole-by-hole strategy for the AAA Titans at Jaypee Greens Wish Town">'
+            '<meta name="description" content="Hole-by-hole strategy for Jaypee Greens Wish Town">'
             '<style>body{margin:0}</style></head><body>\n' + out + '\n</body></html>\n')
     open(f'{ROOT}/docs/index.html', 'w').write(site)
     open(f'{ROOT}/docs/.nojekyll', 'w').write('')

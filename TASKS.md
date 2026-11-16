@@ -46,3 +46,10 @@ Prompt: `Run Batch 4 from TASKS.md.`
 ## Later
 - [ ] Flyover video per hole (owner to choose tool, e.g. Higgsfield).
 - [ ] Calibrate the model against real team scores.
+
+## New team (Nov 2026)  ☐
+- [x] First team's roster, bags and form removed from the repo's current files (still in git history).
+- [x] In-app **Set up my bag** (three carries, clubs, shape, drive width; live checks) replaces the Google Form; bags sync through `tools/bag_store.gs`.
+- [ ] Owner deploys `tools/bag_store.gs` and sends the Web app URL → `data/team.json` `storeUrl`, plus the team name and (optional) roster.
+- [ ] Pilot with 2–3 players, then share personal links (`https://arpitgoel7.github.io/wishtown-caddie/?p=First%20Last`).
+

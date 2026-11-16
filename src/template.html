@@ -132,6 +132,19 @@ input[type="number"] { font-variant-numeric: tabular-nums; }
 .guide-card .who select { font-size: 16px; padding: 8px; }
 .guide-card .key { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; color: var(--muted); }
 .guide-card .key i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+.setup .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; }
+.setup .grid label { display: flex; gap: 6px; align-items: center; font-size: 14px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.setup fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; }
+.setup legend { font-family: var(--display); font-weight: 700; font-size: 18px; padding: 0; margin-bottom: 4px; }
+.setup .q { display: grid; gap: 4px; }
+.setup .q select, .setup .q input { font-size: 16px; padding: 7px 8px; }
+.setup .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.setup .preview { width: 100%; font-size: 14px; }
+.setup .preview input { width: 5em; padding: 4px 6px; }
+.setup .checks { display: grid; gap: 6px; }
+.setup .checks div { border-left: 3px solid var(--warn); padding: 4px 10px; background: color-mix(in srgb, var(--warn) 10%, transparent); font-size: 14px; }
+.setup .ok { border-left: 3px solid var(--good); padding: 4px 10px; font-size: 14px; }
+.setup .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .helpbtn { font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--accent); cursor: pointer; font-weight: 600; }
 .banner.warn { background: color-mix(in srgb, var(--warn) 16%, var(--surface)); border-left: 4px solid var(--warn); }
 .confirm { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; }
@@ -186,8 +199,9 @@ input[type="number"] { font-variant-numeric: tabular-nums; }
 </div>
 <div class="guide" id="guide" role="dialog" aria-modal="true" aria-labelledby="guideTitle" hidden>
   <div class="guide-card">
-    <div><div class="eyebrow">AAA Titans · Wish Town Caddie</div><h2 id="guideTitle">How to read your caddie</h2></div>
-    <div class="who"><label for="guideWho"><b>1. Who are you?</b> Pick your name once; this phone remembers it.</label><select id="guideWho"></select></div>
+    <div><div class="eyebrow"><span class="teamName"></span>Wish Town Caddie</div><h2 id="guideTitle">How to read your caddie</h2></div>
+    <div class="who"><label for="guideWho"><b>1. Who are you?</b> Pick your name once; this phone remembers it. Not on the list, or no bag yet?</label><select id="guideWho"></select>
+      <button class="btn" id="guideSetup" type="button">Set up my bag (2 min)</button></div>
     <ol start="2">
       <li><b>Choose a hole</b> with the ‹ › arrows or the Hole list at the top. Your tee (Blue for men, Red for ladies), the pin (front, middle, back) and the goal are next to it.
         <b>Play to handicap safely</b> avoids big numbers; <b>Lowest average</b> chases the best score.</li>
@@ -198,12 +212,16 @@ input[type="number"] { font-variant-numeric: tabular-nums; }
         <div class="key"><span><i style="background:#F2C230"></i>Your route</span><span><i style="background:#fff;border:1px solid #ccc"></i>Fairway</span><span><i style="background:#E9F5C9"></i>Rough</span><span><i style="background:#FF9F43"></i>Trees</span><span><i style="background:#E8C77A"></i>Bunker</span><span><i style="background:#FF5A4E"></i>Water / OB</span><span><i style="background:#7CFC9A"></i>Green</span></div>
         White arcs are distances from your tee.</li>
       <li><b>Round plan</b> lists your tee club, aim, average and Stableford on all 18 holes, and the strokes you get on each. Tap a hole to open it.</li>
-      <li><b>My bag</b> is where you <b>add or edit</b> your clubs: carry and total distance, side miss (± yds), confidence, and your shot shape (draw, straight or fade, and any club that curves differently). Until you enter yours, the plan uses <b>sample numbers</b> for your handicap. Your bag is saved on this phone only.</li>
+      <li><b>Set up my bag</b> asks for three carry distances, the clubs you carry, your shot shape and how wide your drives go, and builds the rest. It is saved for your team, so you only do it once. Fine-tune any club later in <b>My bag</b>. Until then, the plan uses <b>sample numbers</b> for your handicap.</li>
       <li><b>Hazards</b> lists every bunker, pond, tree line and OB with the distance to reach and to carry it from your tee. <b>Scorecard</b> has the card, ratings and your strokes per hole.</li>
     </ol>
-    <p class="note">The plan is an estimate from satellite maps and a golf model, not a guarantee. Yardages follow the card except where a hole says otherwise (hole 1's tees are currently set forward and are approximate). Always check the markers on the day.</p>
+    <p class="note">The plan is an estimate from satellite maps and a golf model, not a guarantee. Yardages follow the card except where a hole says otherwise. Always check the markers on the day.</p>
     <button class="btn" id="guideGo">Show my game plan</button>
   </div>
+</div>
+
+<div class="guide setup" id="setup" role="dialog" aria-modal="true" aria-labelledby="setupTitle" hidden>
+  <form class="guide-card" id="setupForm" novalidate></form>
 </div>
 
 <script id="holes-src">const HOLES = {}, OSM = {};
@@ -279,8 +297,7 @@ self.onmessage = (e) => { try { self.postMessage({ id: e.data.id, res: compute(e
 'use strict';
 const IMGS = {{IMGS}};
 const SCORECARD = {{SCORECARD}};
-const ROSTER = {{ROSTER}};
-const TEAM_BAGS = {{BAGS}}.players || {}; // from the bag form (tools/import_bags.py), keyed by roster name
+const TEAM = {{TEAM}}; // data/team.json: team name, optional roster, Google Apps Script store URL (tools/bag_store.gs)
 const MAPPED = Object.keys(HOLES).map(Number).filter((n) => HOLES[n].mapped).sort((a, b) => a - b);
 const TEE_KEYS = ['Black', 'Blue', 'White', 'Red'];
 const PIN_KEYS = ['Front', 'Middle', 'Back'];
@@ -290,46 +307,48 @@ const BAGS = {
 };
 function sampleBag(h, g) { const f = 1 + (18 - h) * 0.008; return BAGS[g].map(([n, c, t]) => ({ name: n, carry: Math.round(c * f), total: Math.round(t * f), acc: '', conf: 3, shape: '', on: true })); }
 function newPlayer(name, g, h, sample) { return { id: 'p' + Math.random().toString(36).slice(2, 8), name, gender: g, hcp: h, tee: g === 'F' ? 'Red' : 'Blue', shape: 'S', curve: 2, accMode: 'yds', clubs: sampleBag(h, g), sample: !!sample }; }
+const genderFor = (tee) => (tee === 'Red' ? 'F' : 'M');
 function rosterPlayers() {
-  return ROSTER.players.map((r) => Object.assign(newPlayer(r.name, r.tee === 'Red' ? 'F' : 'M', r.playingHandicap, true), { tee: r.tee, reserve: !!r.reserve }));
+  return (TEAM.players || []).map((r) => Object.assign(newPlayer(r.name, genderFor(r.tee), r.playingHandicap, true), { tee: r.tee }));
 }
+const guestPlayer = () => Object.assign(newPlayer('Guest', 'M', 18, true), { guest: true });
+const nameKey = (n) => String(n || '').replace(/\s+/g, ' ').trim().toLowerCase();
+const findPlayer = (n) => S.players.findIndex((q) => nameKey(q.name) === nameKey(n));
 
-const STORE = 'wishtown-caddie-v2', STORE_V1 = 'wishtown-caddie-v1';
+const STORE = 'wishtown-caddie-v3'; // v3: per-team app with the shared bag store (earlier versions held the old team)
 function load() {
   let s = null;
   try { s = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch (e) { s = null; }
   if (s && Array.isArray(s.players) && s.players.length) return s;
   const players = rosterPlayers();
-  s = { players, cur: Math.max(0, players.findIndex((p) => p.name === 'Arpit Goel')), pin: 'Middle', objective: 'safe', tab: 'plan', hole: MAPPED[0] || 1 };
-  // carry over bags typed into the Hole 4 page (v1): match on full or first name, otherwise add the player
-  let old = null;
-  try { old = JSON.parse(localStorage.getItem(STORE_V1) || 'null'); } catch (e) { old = null; }
-  if (old && Array.isArray(old.players)) for (const o of old.players) {
-    if (o.sample || !o.name) continue;
-    const nm = o.name.trim().toLowerCase(), first = nm.split(/\s+/)[0];
-    const m = s.players.find((p) => p.name.toLowerCase() === nm) || s.players.find((p) => p.name.toLowerCase().split(' ')[0] === first);
-    const bag = { clubs: (o.clubs || []).map((c) => Object.assign({ shape: '' }, c)), accMode: o.accMode || 'yds', shape: o.bias === 'L' ? 'D' : o.bias === 'R' ? 'F' : 'S', curve: 2, sample: false };
-    if (m) Object.assign(m, bag); else s.players.push(Object.assign(newPlayer(o.name, o.gender || 'M', +o.hcp || 18, false), bag, { tee: o.tee || 'Blue' }));
-  }
-  return s;
+  return { players: players.length ? players : [guestPlayer()], cur: 0, pin: 'Middle', objective: 'safe', tab: 'plan', hole: MAPPED[0] || 1 };
 }
 let S = load();
-// Bags from the team form replace sample numbers, and a newer form answer replaces an older one,
-// but never a bag the player has edited on this phone (p.fromForm is cleared on any edit).
-function applyTeamBags() {
-  for (const p of S.players) {
-    const b = TEAM_BAGS[p.name];
-    if (!b || !(p.sample || (p.fromForm && p.fromForm !== b.updated))) continue;
-    Object.assign(p, { clubs: b.clubs.map((c) => Object.assign({}, c)), shape: b.shape, curve: b.curve, sample: false, fromForm: b.updated });
-    if (b.hcp != null) p.hcp = b.hcp;
-    if (b.tee) p.tee = b.tee;
+for (const r of rosterPlayers()) if (findPlayer(r.name) < 0) S.players.push(r); // roster additions since last visit
+// Bags from the team sheet replace sample numbers, and a newer saved bag replaces an older one,
+// but never a bag edited on this phone (p.fromStore is cleared on any edit) or one still waiting to be sent.
+function applyBags(bags) {
+  let changed = false;
+  for (const b of Object.values(bags || {})) {
+    if (!b || !b.name || !Array.isArray(b.clubs) || !b.clubs.length) continue;
+    let i = findPlayer(b.name);
+    if (i < 0) { S.players.push(Object.assign(newPlayer(b.name, b.gender || genderFor(b.tee), b.hcp, true), { tee: b.tee || 'Blue' })); i = S.players.length - 1; }
+    const p = S.players[i];
+    if (p.unsent || !(p.sample || (p.fromStore && p.fromStore !== b.updated))) continue;
+    Object.assign(p, { clubs: b.clubs.map((c) => Object.assign({ conf: 3, shape: '', acc: '' }, c, { on: c.on !== false })), shape: b.shape || 'S', curve: b.curve || 2, accMode: 'yds', sample: false, fromStore: b.updated });
+    const r = (TEAM.players || []).find((q) => nameKey(q.name) === nameKey(p.name));
+    p.hcp = r ? r.playingHandicap : b.hcp; // a roster handicap wins
+    if (b.tee) { p.tee = b.tee; p.gender = b.gender || genderFor(b.tee); }
+    changed = true;
   }
+  // drop the untouched placeholder once real players are here
+  const g = S.players.findIndex((q) => q.guest && q.sample);
+  if (g >= 0 && S.players.length > 1) { const curName = cur().name; S.players.splice(g, 1); S.cur = Math.max(0, findPlayer(curName)); changed = true; }
+  return changed;
 }
-applyTeamBags();
-for (const p of S.players) { const r = ROSTER.players.find((q) => q.name === p.name); if (r) p.reserve = !!r.reserve; } // roster decides reserves
 if (!HOLES[S.hole] && !SCORECARD.holes[S.hole - 1]) S.hole = MAPPED[0] || 1;
 function save() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) { } }
-const cur = () => S.players[Math.min(S.cur, S.players.length - 1)];
+function cur() { return S.players[Math.max(0, Math.min(S.cur, S.players.length - 1))]; }
 const profileOf = (p) => ({ hcp: p.hcp, clubs: p.clubs, shape: p.shape === 'S' ? 'S' : p.shape + p.curve, accMode: p.accMode });
 
 // ---------- worker & plan cache ----------
@@ -495,8 +514,8 @@ function renderPlan() {
   const sh = sec ? sec.shares : {};
   const share = (k) => sh[k] || 0;
   let html = H.disclaimer ? `<div class="banner warn"><span><b>Note:</b> ${esc(H.disclaimer)}</span></div>` : '';
-  if (p.fromForm) html += `<p class="note">Using the bag ${esc(p.name.replace(/^(Brig(adier)?|Col|Maj|Capt|Dr|Mr|Mrs|Ms)\.?\s+/i, '').split(' ')[0])} sent in the team form. Change anything in My bag; your edits stay on this phone.</p>`;
-  if (p.sample) html += `<div class="banner"><span>These are <b>sample numbers</b> for a ${p.hcp}-handicap ${p.gender === 'F' ? 'lady golfer' : 'golfer'}. Enter your own distances, accuracy and shot shape to get your real plan.</span><button class="btn small" data-go="bag">Enter my bag</button></div>`;
+  if (p.fromStore) html += `<p class="note">Using the bag saved to the team sheet. Change anything in My bag, or set it up again.</p>`;
+  if (p.sample) html += `<div class="banner"><span>These are <b>sample numbers</b> for a ${p.hcp}-handicap ${p.gender === 'F' ? 'lady golfer' : 'golfer'}. Set up your bag (2 minutes) to get your real plan.</span><button class="btn small" data-setup="1">Set up my bag</button></div>`;
   html += `<div class="kpis">
     <div class="kpi"><b>${row.mean.toFixed(2)}</b><span>Average score on this hole</span></div>
     <div class="kpi"><b>${pct(row.npb)}</b><span>Net par or better (net par ${R.netPar})</span></div>
@@ -542,6 +561,7 @@ function renderPlan() {
 $('#panel-plan').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-pick]'); if (tr) { pick = +tr.dataset.pick; renderPlan(); drawMap(); return; }
   const h = e.target.closest('[data-hole]'); if (h) { goHole(+h.dataset.hole); return; }
+  if (e.target.closest('[data-setup]')) { openSetup(); return; }
   const b = e.target.closest('[data-go]'); if (b) { S.tab = b.dataset.go; save(); showTab(); }
 });
 
@@ -599,6 +619,8 @@ let confirmDel = false;
 function renderBag() {
   const p = cur(), el = $('#panel-bag');
   el.innerHTML = `<div class="form">
+    <div class="banner"><span><b>Set up my bag</b>: a few quick questions build your whole bag. Then fine-tune any club below.</span><button class="btn small" id="openSetup">Set up my bag</button></div>
+    ${syncNote(p)}
     <div class="row">
       <div class="field"><label for="f-name">Name</label><input id="f-name" value="${esc(p.name)}" style="width:12em"></div>
       <div class="field"><label for="f-hcp">Playing handicap</label><input id="f-hcp" type="number" min="0" max="54" step="1" value="${p.hcp}" style="width:6em"></div>
@@ -629,9 +651,10 @@ function renderBag() {
     <div class="row">
       <button class="btn ghost small" id="addPlayer">Add teammate</button>
       ${S.players.length > 1 ? (confirmDel ? `<span class="confirm">Delete ${esc(p.name)}? <button class="btn danger small" id="delYes">Delete</button><button class="btn ghost small" id="delNo">Keep</button></span>` : `<button class="btn danger small" id="delPlayer">Delete this player</button>`) : ''}
-      <button class="btn ghost small" id="resetTeam">Reload team roster</button>
+      ${TEAM.storeUrl ? '<button class="btn ghost small" id="resetTeam">Refresh team bags</button>' : ''}
+      ${TEAM.storeUrl && !p.guest ? '<button class="btn ghost small" id="sendBag">Send my bag to the team sheet</button>' : ''}
     </div>
-    <p class="note">The AAA Titans roster is preloaded with playing handicaps; ladies start on the Red tees. Bags are saved in this browser only, so each teammate can open this page on their own phone and enter theirs.</p>
+    <p class="note">${TEAM.storeUrl ? 'Bags saved with “Set up my bag” or “Send” go to the team sheet, so they also appear on teammates’ phones. Changes you make in this table stay on this phone until you send them.' : 'Bags are saved on this phone.'}</p>
   </div>`;
 }
 $('#panel-bag').addEventListener('input', (e) => {
@@ -645,7 +668,7 @@ $('#panel-bag').addEventListener('input', (e) => {
     else if (k === 'acc') c.acc = t.value === '' ? '' : +t.value;
     else c[k] = +t.value;
   } else return;
-  p.sample = false; p.fromForm = null; save();
+  p.sample = false; p.fromStore = null; save();
 });
 $('#panel-bag').addEventListener('change', (e) => {
   const p = cur(), t = e.target;
@@ -654,22 +677,20 @@ $('#panel-bag').addEventListener('change', (e) => {
   else if (t.id === 'f-curve') p.curve = +t.value;
   else if (t.id === 'f-acc') { p.accMode = t.value; p.clubs.forEach((c) => (c.acc = '')); renderBag(); }
   else return;
-  p.sample = false; p.fromForm = null; save(); renderHeader();
+  p.sample = false; p.fromStore = null; save(); renderHeader();
 });
 $('#panel-bag').addEventListener('click', (e) => {
   const p = cur(), id = e.target.id;
   if (id === 'addClub') { p.clubs.push({ name: 'New club', carry: 100, total: 105, acc: '', conf: 3, shape: '', on: true }); renderBag(); }
-  else if (id === 'resetBag') { p.clubs = sampleBag(p.hcp, p.gender); p.fromForm = null; renderBag(); }
+  else if (id === 'resetBag') { p.clubs = sampleBag(p.hcp, p.gender); p.fromStore = null; renderBag(); }
   else if (id === 'buildPlan') { S.tab = 'plan'; save(); showTab(); refreshAll(); }
-  else if (id === 'addPlayer') { S.players.push(newPlayer('New player', 'M', 18, false)); S.cur = S.players.length - 1; confirmDel = false; refreshAll(); }
+  else if (id === 'addPlayer') { confirmDel = false; openSetup(true); return; }
   else if (id === 'delPlayer') { confirmDel = true; renderBag(); }
   else if (id === 'delNo') { confirmDel = false; renderBag(); }
   else if (id === 'delYes') { S.players.splice(S.cur, 1); S.cur = 0; confirmDel = false; refreshAll(); }
-  else if (id === 'resetTeam') {
-    // add back any roster player missing from this browser; keeps everyone's bags
-    for (const r of rosterPlayers()) if (!S.players.some((q) => q.name.toLowerCase() === r.name.toLowerCase())) S.players.push(r);
-    refreshAll();
-  }
+  else if (id === 'resetTeam') { for (const r of rosterPlayers()) if (findPlayer(r.name) < 0) S.players.push(r); loadTeamBags(true); }
+  else if (id === 'openSetup') { openSetup(); return; }
+  else if (id === 'sendBag') { sendBag(p); return; }
   else return;
   save();
 });
@@ -788,12 +809,193 @@ function drawMap() {
   map.innerHTML = s;
 }
 
+// ---------- team bag store (Google Apps Script web app, tools/bag_store.gs) ----------
+const sync = { state: TEAM.storeUrl ? 'loading' : 'off', msg: '' };
+function syncNote(p) {
+  if (!TEAM.storeUrl) return '';
+  if (p.unsent) return `<p class="note"><b>Not sent yet:</b> this bag is saved on this phone only. ${sync.msg ? esc(sync.msg) + ' ' : ''}Tap “Send my bag to the team sheet” when you have a connection.</p>`;
+  if (p.fromStore) return `<p class="note">Saved to the team sheet (${esc(String(p.fromStore).slice(0, 10))}).</p>`;
+  return '';
+}
+function loadTeamBags(announce) {
+  if (!TEAM.storeUrl) return;
+  sync.state = 'loading';
+  fetch(TEAM.storeUrl, { cache: 'no-store' }).then((r) => r.json()).then((j) => {
+    if (!j || !j.ok) throw new Error((j && j.error) || 'no data');
+    sync.state = 'ok';
+    const linked = linkPending();
+    if (applyBags(j.players) || linked || announce) { save(); refreshAll(); if (!$('#guide').hidden) fillGuideWho(); }
+    for (const p of S.players) if (p.unsent && p.mine) sendBag(p, true);
+  }).catch(() => { sync.state = 'error'; if (announce) { sync.msg = 'Could not reach the team sheet.'; renderBag(); } });
+}
+function bagPayload(p) {
+  return { name: p.name, hcp: p.hcp, tee: p.tee, gender: p.gender, shape: p.shape, curve: p.curve,
+    clubs: p.clubs.filter((c) => c.on && +c.carry > 0).map((c) => ({ name: c.name, carry: Math.round(+c.carry), total: Math.round(Math.max(+c.carry, +c.total || +c.carry)), acc: p.accMode === 'yds' ? c.acc : '', conf: +c.conf || 3, shape: c.shape || '' })) };
+}
+function sendBag(p, quiet) {
+  if (!TEAM.storeUrl) return;
+  p.unsent = true; p.mine = true; save();
+  sync.msg = quiet ? sync.msg : 'Sending…'; if (!quiet && S.tab === 'bag') renderBag();
+  fetch(TEAM.storeUrl, { method: 'POST', body: JSON.stringify(bagPayload(p)) }) // text/plain: no CORS preflight
+    .then((r) => r.json()).then((j) => {
+      if (!j || !j.ok) throw new Error((j && j.error) || 'not saved');
+      p.unsent = false; p.fromStore = j.updated; sync.msg = ''; save();
+      if (!quiet) { toastSetup('Saved to the team sheet.'); if (S.tab === 'bag') renderBag(); renderPlan(); }
+    })
+    .catch((err) => { sync.msg = 'Could not send (' + String(err.message || err).slice(0, 80) + ').'; save(); if (!quiet && S.tab === 'bag') renderBag(); });
+}
+
+// ---------- "Set up my bag": a few questions build the whole bag ----------
+// reference carries (yds) for a mid-handicap man; the player's three answers stretch this scale to fit
+const CLUB_REF = [['Driver', 215], ['3 Wood', 195], ['4 Wood', 188], ['5 Wood', 180], ['7 Wood', 170], ['9 Wood', 162],
+  ['2 Hybrid', 188], ['3 Hybrid', 180], ['4 Hybrid', 172], ['5 Hybrid', 165], ['6 Hybrid', 157],
+  ['3 Iron', 175], ['4 Iron', 167], ['5 Iron', 160], ['6 Iron', 150], ['7 Iron', 140], ['8 Iron', 130], ['9 Iron', 120], ['PW', 108],
+  ['46°', 104], ['48°', 99], ['50°', 94], ['52°', 89], ['54°', 84], ['56°', 78], ['58°', 72], ['60°', 66], ['62°', 60], ['64°', 54]];
+const REF = Object.fromEntries(CLUB_REF);
+const WEDGES = ['PW', '46°', '48°', '50°', '52°', '54°', '56°', '58°', '60°', '62°', '64°'];
+const ROLL = { driver: 0.09, wood: 0.07, hybrid: 0.05, iron: 0.035, wedge: 0.015 };
+const DEFAULT_BAG = { M: ['Driver', '3 Wood', '5 Wood', '4 Hybrid', '5 Iron', '6 Iron', '7 Iron', '8 Iron', '9 Iron', 'PW', '52°', '56°', '60°'],
+  F: ['Driver', '3 Wood', '5 Wood', '4 Hybrid', '5 Hybrid', '6 Iron', '7 Iron', '8 Iron', '9 Iron', 'PW', '56°'] };
+const ACC_CHOICES = [['', 'Not sure: use my handicap'], [10, 'within ±10 yds'], [15, 'within ±15 yds'], [20, 'within ±20 yds'], [25, 'within ±25 yds'], [30, 'within ±30 yds'], [40, 'within ±40 yds or more']];
+const r5 = (v) => Math.round(v / 5) * 5;
+const opts = (lo, hi, sel) => { let o = ''; for (let v = lo; v <= hi; v += 5) o += `<option ${v === sel ? 'selected' : ''}>${v}</option>`; return o; };
+let SU = null;
+
+function openSetup(asNew) {
+  const p = cur(), fresh = asNew || p.guest;
+  const g = fresh ? 'M' : p.gender, h = fresh ? 18 : p.hcp, f = 1 + (18 - h) * 0.008;
+  const have = !fresh && !p.sample ? p.clubs.filter((c) => c.on && REF[c.name]).map((c) => c.name) : [];
+  const ticked = new Set(have.length >= 4 ? have : DEFAULT_BAG[g]);
+  const by = (n) => (!fresh && !p.sample ? (p.clubs.find((c) => c.name === n && c.on) || {}).carry : 0);
+  const wedge = [...ticked].filter((n) => WEDGES.includes(n)).pop() || 'PW';
+  SU = { name: fresh ? '' : p.name, hcp: h, tee: fresh ? 'Blue' : p.tee, shape: fresh ? 'S' : p.shape, curve: fresh ? 2 : p.curve, ticked,
+    longC: by([...ticked].sort((a, b) => REF[b] - REF[a])[0]) || r5((g === 'F' ? 165 : 215) * f), c7: by('7 Iron') || r5((g === 'F' ? 105 : 140) * f),
+    wedge, wedgeC: by(wedge) || r5(REF[wedge] * (g === 'F' ? 0.75 : 1) * f), acc: '', edits: {}, asNew: !!asNew };
+  renderSetup();
+  $('#guide').hidden = true; $('#setup').hidden = false; $('#setup').scrollTop = 0;
+}
+function suClubs() { return [...SU.ticked].filter((n) => REF[n]).sort((a, b) => REF[b] - REF[a]); }
+function suGenerate() {
+  const clubs = suClubs(); if (!clubs.length) return [];
+  const anchors = [[REF[clubs[0]], +SU.longC], [REF['7 Iron'], +SU.c7], [REF[SU.wedge] || REF.PW, +SU.wedgeC]]
+    .filter((a, i, all) => all.findIndex((b) => b[0] === a[0]) === i).sort((a, b) => b[0] - a[0]);
+  const at = (ref) => { // piecewise-linear on the reference scale, extrapolated from the nearest segment
+    if (anchors.length === 1) return anchors[0][1] * ref / anchors[0][0];
+    let k = anchors.findIndex((a) => ref >= a[0]); if (k < 0) k = anchors.length - 1; if (k === 0) k = 1;
+    const [x0, y0] = anchors[k - 1], [x1, y1] = anchors[k];
+    return y1 + ((ref - x1) * (y0 - y1)) / (x0 - x1);
+  };
+  const longC = Math.max(1, Math.round(at(REF[clubs[0]])));
+  return clubs.map((n) => {
+    const e = SU.edits[n] || {}, kind = clubKind(n);
+    const carry = Math.max(20, Math.round(e.carry || at(REF[n])));
+    const total = Math.round(e.total || carry * (1 + (ROLL[kind] || 0.03)));
+    const acc = SU.acc ? Math.max(3, Math.round((+SU.acc * carry) / longC)) : '';
+    return { name: n, carry, total: Math.max(carry, total), acc, conf: 3, shape: '', on: true, edited: !!(e.carry || e.total) };
+  });
+}
+function suChecks(bag) {
+  const w = [];
+  if (!SU.name.trim()) w.push({ stop: true, t: 'Add your name.' });
+  if (!(SU.hcp >= 0 && SU.hcp <= 54)) w.push({ stop: true, t: 'Add your playing handicap (0–54).' });
+  if (bag.length < 3) w.push({ stop: true, t: 'Tick at least three clubs you carry.' });
+  for (let i = 1; i < bag.length; i++) {
+    const a = bag[i - 1], b = bag[i];
+    if (b.carry >= a.carry) w.push({ t: `${b.name} (${b.carry}) carries as far as or farther than ${a.name} (${a.carry}). Check one of them.` });
+    else if (a.carry - b.carry > 25 && !(a.name === 'Driver')) w.push({ t: `${a.carry - b.carry} yds between ${a.name} and ${b.name}: is a club missing, or a number off?` });
+  }
+  const seven = bag.find((c) => c.name === '7 Iron');
+  if (seven && bag[0].name !== '7 Iron') { const r = seven.carry / bag[0].carry; if (r < 0.5 || r > 0.8) w.push({ t: `Your 7 iron carries ${Math.round(r * 100)}% of your ${bag[0].name}; most golfers are 60–70%. Both are carry (where the ball lands).` }); }
+  for (const c of bag) if (c.edited && c.total - c.carry > 0.15 * c.carry + 5) w.push({ t: `${c.name}: ${c.total - c.carry} yds of roll. Total should be where a normal shot stops, not your best ever.` });
+  if (SU.acc) {
+    const est = Math.round(bag[0].carry * (0.05 + 0.0028 * (SU.hcp + 2)));
+    if (+SU.acc < 0.55 * est) w.push({ t: `±${SU.acc} yds is very straight for a ${SU.hcp} handicap (most miss by about ±${est}). Pick the width that covers most of your drives, bad ones included.` });
+  }
+  return w;
+}
+function renderSetup() {
+  const bag = suGenerate(), checks = suChecks(bag), longest = suClubs()[0] || 'Driver';
+  const wedgesTicked = WEDGES.filter((n) => SU.ticked.has(n));
+  if (!wedgesTicked.includes(SU.wedge)) SU.wedge = wedgesTicked[wedgesTicked.length - 1] || 'PW';
+  $('#setupForm').innerHTML = `
+    <div><div class="eyebrow"><span class="teamName"></span>Wish Town Caddie</div><h2 id="setupTitle">Set up my bag</h2>
+      <p class="note">About two minutes. Think of your <b>normal</b> shots on the course, not your best ones. Carry = where the ball lands.</p></div>
+    <fieldset><legend>1. About you</legend><div class="two">
+      <div class="q"><label for="su-name">Your name</label><input id="su-name" autocomplete="name" value="${esc(SU.name)}" placeholder="First and last name"></div>
+      <div class="q"><label for="su-hcp">Playing handicap</label><input id="su-hcp" type="number" inputmode="numeric" min="0" max="54" value="${SU.hcp}"></div>
+      <div class="q"><label for="su-tee">Tees you play</label><select id="su-tee">${TEE_KEYS.map((t) => `<option ${t === SU.tee ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+    </div></fieldset>
+    <fieldset><legend>2. Your shot shape</legend><div class="two">
+      <div class="q"><label for="su-shape">Your normal shot (right-handed)</label><select id="su-shape"><option value="D" ${SU.shape === 'D' ? 'selected' : ''}>Draw: curves left</option><option value="S" ${SU.shape === 'S' ? 'selected' : ''}>Straight</option><option value="F" ${SU.shape === 'F' ? 'selected' : ''}>Fade: curves right</option></select></div>
+      <div class="q"><label for="su-curve">How much it curves</label><select id="su-curve" ${SU.shape === 'S' ? 'disabled' : ''}>${[[1, 'A little (a few yds)'], [2, 'Medium'], [3, 'A lot']].map(([v, l]) => `<option value="${v}" ${+SU.curve === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+    </div></fieldset>
+    <fieldset><legend>3. Clubs in your bag</legend><p class="note" style="margin:0">Tick every club you carry. Wedges by loft: gap ≈ 50–52°, sand ≈ 54–56°, lob ≈ 58–60°.</p>
+      <div class="grid">${CLUB_REF.map(([n]) => `<label><input type="checkbox" data-club="${esc(n)}" ${SU.ticked.has(n) ? 'checked' : ''}>${esc(n)}</label>`).join('')}</div></fieldset>
+    <fieldset><legend>4. Three distances (carry, yards)</legend><div class="two">
+      <div class="q"><label for="su-long">${esc(longest)} carry</label><select id="su-long">${opts(80, 330, +SU.longC)}</select></div>
+      <div class="q"><label for="su-c7">7 iron carry</label><select id="su-c7">${opts(50, 230, +SU.c7)}</select></div>
+      <div class="q"><label for="su-wedge">Your shortest full-swing wedge</label><select id="su-wedge">${(wedgesTicked.length ? wedgesTicked : ['PW']).map((n) => `<option ${n === SU.wedge ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select></div>
+      <div class="q"><label for="su-wc">…its carry</label><select id="su-wc">${opts(20, 160, +SU.wedgeC)}</select></div>
+    </div></fieldset>
+    <fieldset><legend>5. How wide do your drives go?</legend>
+      <div class="q"><label for="su-acc">Most of my drives finish… (left or right of where I aimed)</label><select id="su-acc">${ACC_CHOICES.map(([v, l]) => `<option value="${v}" ${String(v) === String(SU.acc) ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+      <p class="note" style="margin:0">This is sideways, not distance. Not sure? Leave it on “use my handicap”.</p></fieldset>
+    <fieldset><legend>6. Your bag</legend><p class="note" style="margin:0">Built from your answers, with normal roll added. Change any number you know exactly.</p>
+      <div class="tablewrap"><table class="preview"><thead><tr><th>Club</th><th>Carry</th><th>Total</th><th>± yds</th></tr></thead><tbody>
+      ${bag.map((c) => `<tr><td>${esc(c.name)}</td><td><input type="number" inputmode="numeric" data-edit="carry" data-n="${esc(c.name)}" value="${c.carry}"></td><td><input type="number" inputmode="numeric" data-edit="total" data-n="${esc(c.name)}" value="${c.total}"></td><td>${c.acc === '' ? 'auto' : c.acc}</td></tr>`).join('')}
+      </tbody></table></div></fieldset>
+    <div class="checks">${checks.length ? checks.map((c) => `<div>${c.stop ? '<b>Needed:</b> ' : '<b>Check:</b> '}${esc(c.t)}</div>`).join('') : '<p class="ok">Looks consistent.</p>'}</div>
+    <div class="actions"><button class="btn" id="su-save" type="submit" ${checks.some((c) => c.stop) ? 'disabled' : ''}>${TEAM.storeUrl ? 'Save & send to my team' : 'Save my bag'}</button><button class="btn ghost" id="su-cancel" type="button">Cancel</button><span class="note" id="su-msg"></span></div>`;
+  document.querySelectorAll('.teamName').forEach((el) => (el.textContent = TEAM.name ? TEAM.name + ' · ' : ''));
+}
+function toastSetup(t) { const m = $('#su-msg'); if (m) m.textContent = t; }
+$('#setupForm').addEventListener('change', (e) => {
+  const t = e.target, id = t.id;
+  if (id === 'su-name') SU.name = t.value;
+  else if (id === 'su-hcp') SU.hcp = t.value === '' ? NaN : Math.max(0, Math.min(54, Math.round(+t.value)));
+  else if (id === 'su-tee') SU.tee = t.value;
+  else if (id === 'su-shape') SU.shape = t.value;
+  else if (id === 'su-curve') SU.curve = +t.value;
+  else if (id === 'su-long') SU.longC = +t.value;
+  else if (id === 'su-c7') SU.c7 = +t.value;
+  else if (id === 'su-wedge') SU.wedge = t.value;
+  else if (id === 'su-wc') SU.wedgeC = +t.value;
+  else if (id === 'su-acc') SU.acc = t.value;
+  else if (t.dataset.club) { if (t.checked) SU.ticked.add(t.dataset.club); else SU.ticked.delete(t.dataset.club); }
+  else if (t.dataset.edit) { const n = t.dataset.n; SU.edits[n] = Object.assign(SU.edits[n] || {}, { [t.dataset.edit]: Math.max(0, Math.round(+t.value || 0)) }); }
+  else return;
+  const y = $('#setup').scrollTop; renderSetup(); $('#setup').scrollTop = y;
+});
+$('#setupForm').addEventListener('input', (e) => { if (e.target.id === 'su-name') SU.name = e.target.value; });
+$('#setupForm').addEventListener('click', (e) => { if (e.target.id === 'su-cancel') { $('#setup').hidden = true; if (!S.seenGuide) openGuide(); } });
+$('#setupForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const bag = suGenerate(); if (suChecks(bag).some((c) => c.stop)) return;
+  const name = SU.name.replace(/\s+/g, ' ').trim();
+  let i = findPlayer(name);
+  if (i < 0 && !SU.asNew && cur().guest) i = S.players.indexOf(cur());
+  if (i < 0) { S.players.push(newPlayer(name, genderFor(SU.tee), SU.hcp, false)); i = S.players.length - 1; }
+  const p = S.players[i];
+  Object.assign(p, { name, hcp: SU.hcp, tee: SU.tee, gender: genderFor(SU.tee), shape: SU.shape, curve: SU.curve, accMode: 'yds',
+    clubs: bag.map(({ edited, ...c }) => c), sample: false, guest: false, fromStore: null, mine: true });
+  S.cur = i; S.seenGuide = true; save();
+  $('#setup').hidden = true; S.tab = 'plan'; showTab(); refreshAll();
+  if (TEAM.storeUrl) sendBag(p);
+});
+// a personal link (?p=Name) can name a player who only arrives with the team bags: apply it once they load
+let pendingLink = null;
+function linkPending() { if (!pendingLink) return false; const i = findPlayer(pendingLink); if (i < 0) return false; S.cur = i; S.seenGuide = true; pendingLink = null; return true; }
+
 // ---------- first screen: how to read the app + who are you ----------
+function fillGuideWho() {
+  $('#guideWho').innerHTML = S.players.map((q, i) => `<option value="${i}" ${i === S.cur ? 'selected' : ''}>${esc(q.name)} · ${q.hcp} hcp</option>`).join('');
+}
 function openGuide() {
-  $('#guideWho').innerHTML = S.players.map((q, i) => `<option value="${i}" ${i === S.cur ? 'selected' : ''}>${esc(q.name)} · ${q.hcp} hcp${q.reserve ? ' (reserve)' : ''}</option>`).join('');
+  fillGuideWho();
   $('#guide').hidden = false; $('#guide').scrollTop = 0; $('#guideWho').focus({ preventScroll: true });
 }
 $('#helpBtn').addEventListener('click', openGuide);
+$('#guideSetup').addEventListener('click', () => { const i = +$('#guideWho').value; if (i !== S.cur) { S.cur = i; refreshAll(); } openSetup(); });
 $('#guideGo').addEventListener('click', () => {
   const i = +$('#guideWho').value;
   const changed = i !== S.cur;
@@ -802,20 +1004,24 @@ $('#guideGo').addEventListener('click', () => {
   if (changed) refreshAll();
 });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('#guide').hidden) $('#guideGo').click(); });
-// a personal link may carry the player (…#p=Rahul Sharma or ?p=…); used only when the viewer passes it through
+// a personal link may carry the player (…?p=Jane Doe or #p=Jane); used only when the viewer passes it through
 function playerFromLink() {
   try {
     const m = (location.hash + '&' + location.search).match(/[#?&]p=([^&]+)/);
     if (!m) return -1;
     const want = decodeURIComponent(m[1].replace(/\+/g, ' ')).trim().toLowerCase();
-    return S.players.findIndex((q) => q.name.toLowerCase() === want || q.name.toLowerCase().split(' ')[0] === want);
+    const i = S.players.findIndex((q) => nameKey(q.name) === want || nameKey(q.name).split(' ')[0] === want);
+    if (i < 0) pendingLink = want;
+    return i;
   } catch (e) { return -1; }
 }
 { const i = playerFromLink(); if (i >= 0) S.cur = i; }
 
 // ---------- boot ----------
 setHole(S.hole); save();
+document.querySelectorAll('.teamName').forEach((el) => (el.textContent = TEAM.name ? TEAM.name + ' · ' : ''));
 renderHeader(); renderHazards(); renderCard(); renderBag(); showTab(); drawMap(); renderPlan(); run();
 if (!S.seenGuide) openGuide();
+loadTeamBags();
 })();
 </script>
